@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.apache.hop</groupId>
+    <artifactId>hop-parquet-plugin</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <name>Hop Enhanced Parquet Plugin</name>
+    <description>Maven POM for enhanced parquet plugin</description>
+    <url>https://hop.apache.org</url>
+    <inceptionYear>2020</inceptionYear>
+
+
+    <properties>
+        <!-- Set this to the Hop version you want to debug against-->
+        <hop.version>2.9.0-SNAPSHOT</hop.version>
+
+        <!-- Third-party dependencies-->
+        <org.eclipse.platform.version>3.119.0</org.eclipse.platform.version>
+        <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
+        <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+        <parquet.version>1.13.1</parquet.version>
+        <hadoop.version>3.3.6</hadoop.version>
+        <protobuf.version>3.23.2</protobuf.version>
+        <woodstox.version>6.4.0</woodstox.version>
+        <curator.version>5.4.0</curator.version>
+        <zookeeper.version>3.8.0</zookeeper.version>
+
+        <!-- Jandex For annotation Detection -->
+        <jandex.version>3.1.6</jandex.version>
+        <junit.version>4.13.1</junit.version>
+
+        <!-- Java version -->
+        <source.jdk.version>11</source.jdk.version>
+        <target.jdk.version>11</target.jdk.version>
+        <maven.compiler.source>${source.jdk.version}</maven.compiler.source>
+        <maven.compiler.target>${target.jdk.version}</maven.compiler.target>
+
+    </properties>
+
+    <modules>
+        <module>transforms</module>
+        <module>assemblies</module>
+    </modules>
+
+    <!-- needed for correct SWT libs dependending on system -->
+    <profiles>
+        <profile>
+            <id>swt-unix</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <properties>
+                <swt.artifactId>org.eclipse.swt.gtk.linux.x86_64</swt.artifactId>
+                <env>linux</env>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>${swt.artifactId}</artifactId>
+                        <version>${org.eclipse.platform.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+        <profile>
+            <id>swt-mac</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <swt.artifactId>org.eclipse.swt.cocoa.macosx.x86_64</swt.artifactId>
+                <env>mac</env>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>${swt.artifactId}</artifactId>
+                        <version>${org.eclipse.platform.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+        <profile>
+            <id>swt-windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <swt.artifactId>org.eclipse.swt.win32.win32.x86_64</swt.artifactId>
+                <env>windows</env>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>${swt.artifactId}</artifactId>
+                        <version>${org.eclipse.platform.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+    </profiles>
+
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${source.jdk.version}</source>
+                        <target>${target.jdk.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>${maven-assembly-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>io.smallrye</groupId>
+                    <artifactId>jandex-maven-plugin</artifactId>
+                    <version>${jandex.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${source.jdk.version}</source>
+                    <target>${target.jdk.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>jandex-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-index</id>
+                        <goals>
+                            <goal>jandex</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2/</url>
+            <name>Maven Central</name>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>Apache</id>
+            <url>https://repository.apache.org/snapshots/</url>
+            <name>Apache Repository</name>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>apache.snapshots</id>
+            <url>https://repository.apache.org/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+</project>
