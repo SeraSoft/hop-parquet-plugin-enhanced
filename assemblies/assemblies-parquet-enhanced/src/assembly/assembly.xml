@@ -1,7 +1,7 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
-    <id>sample-plugin-assemblies-transform-sample</id>
+    <id>assemblies-parquet-enhanced</id>
     <formats>
         <format>zip</format>
     </formats>
@@ -60,8 +60,6 @@
                 <include>org.apache.parquet:parquet-jackson:jar</include>
                 <include>org.apache.yetus:audience-annotations:jar</include>
                 <include>org.apache.zookeeper:zookeeper:jar</include>
-                <!--                <include>org.codehaus.jackson:jackson-core-asl:jar</include>-->
-                <!--                <include>org.codehaus.jackson:jackson-mapper-asl:jar</include>-->
             </includes>
         </dependencySet>
     </dependencySets>

@@ -17,7 +17,7 @@
 
     <properties>
         <!-- Set this to the Hop version you want to debug against-->
-        <hop.version>2.9.0-SNAPSHOT</hop.version>
+        <hop.version>2.9.0</hop.version>
 
         <!-- Third-party dependencies-->
         <org.eclipse.platform.version>3.119.0</org.eclipse.platform.version>
