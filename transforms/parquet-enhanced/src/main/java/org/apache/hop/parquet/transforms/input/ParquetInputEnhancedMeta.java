@@ -25,6 +25,7 @@ import org.apache.hop.core.exception.HopTransformException;
 import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.variables.IVariables;
+import org.apache.hop.i18n.BaseMessages;
 import org.apache.hop.metadata.api.HopMetadataProperty;
 import org.apache.hop.metadata.api.IHopMetadataProvider;
 import org.apache.hop.pipeline.transform.BaseTransformMeta;
@@ -39,6 +40,20 @@ import org.apache.hop.pipeline.transform.TransformMeta;
     documentationUrl = "/pipeline/transforms/parquet-file-input.html",
     keywords = "i18n::ParquetInputMeta.keyword")
 public class ParquetInputEnhancedMeta extends BaseTransformMeta<ParquetInputEnhanced, ParquetInputEnhancedData> {
+
+  public static final Class<?> PKG = ParquetInputEnhancedMeta.class;
+
+  public static final String[] RequiredFilesCode = new String[] {"N", "Y"};
+
+  public static final String NO = "N";
+
+  public static final String YES = "Y";
+
+  public static final String[] RequiredFilesDesc =
+          new String[] {
+                  BaseMessages.getString(PKG, "System.Combo.No"),
+                  BaseMessages.getString(PKG, "System.Combo.Yes")
+          };
 
   @HopMetadataProperty(key = "filename_field")
   private String filenameField;
