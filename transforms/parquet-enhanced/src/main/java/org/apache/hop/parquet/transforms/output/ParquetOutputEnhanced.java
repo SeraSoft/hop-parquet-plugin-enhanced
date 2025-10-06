@@ -316,7 +316,7 @@ public class ParquetOutputEnhanced extends BaseTransform<ParquetOutputEnhancedMe
         filename += "-" + new DecimalFormat("0000").format(data.split);
       }
       if (data.isBeamContext()) {
-        filename += "_" + log.getLogChannelId() + "_" + data.getBeamBundleNr();
+        filename += "_" + getLogChannelId() + "_" + data.getBeamBundleNr();
       }
       filename += "." + Const.NVL(resolve(meta.getFilenameExtension()), "parquet");
       filename += meta.getCompressionCodec().getExtension();
