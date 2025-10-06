@@ -29,9 +29,9 @@ import org.apache.parquet.schema.MessageType;
 
 public class ParquetReadSupport extends ReadSupport<RowMetaAndData> {
 
-  private List<ParquetField> fields;
+  private List<ParquetFileInputField> fields;
 
-  public ParquetReadSupport(List<ParquetField> fields) {
+  public ParquetReadSupport(List<ParquetFileInputField> fields) {
     this.fields = fields;
   }
 

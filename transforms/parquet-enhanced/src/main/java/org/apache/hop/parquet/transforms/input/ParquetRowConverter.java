@@ -30,9 +30,9 @@ public class ParquetRowConverter extends GroupConverter {
   private final MessageType messageType;
   private RowMetaAndData group;
   private IRowMeta rowMeta;
-  private List<ParquetField> fields;
+  private List<ParquetFileInputField> fields;
 
-  public ParquetRowConverter(MessageType messageType, IRowMeta rowMeta, List<ParquetField> fields) {
+  public ParquetRowConverter(MessageType messageType, IRowMeta rowMeta, List<ParquetFileInputField> fields) {
     this.messageType = messageType;
     this.group = new RowMetaAndData(rowMeta, null);
     this.rowMeta = rowMeta;
@@ -48,7 +48,7 @@ public class ParquetRowConverter extends GroupConverter {
     //
     int rowIndex = -1;
     for (int i = 0; i < fields.size(); i++) {
-      ParquetField field = fields.get(i);
+      ParquetFileInputField field = fields.get(i);
       if (field.getSourceField().equalsIgnoreCase(sourceField)) {
         rowIndex = i;
         break;

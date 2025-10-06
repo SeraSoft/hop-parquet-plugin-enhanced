@@ -19,9 +19,13 @@ package org.apache.hop.parquet.transforms.input;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.vfs2.FileObject;
 import org.apache.hop.core.annotations.Transform;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.exception.HopTransformException;
+import org.apache.hop.core.fileinput.FileInputList;
 import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.variables.IVariables;
@@ -39,9 +43,41 @@ import org.apache.hop.pipeline.transform.TransformMeta;
     categoryDescription = "i18n:org.apache.hop.pipeline.transform:BaseTransform.Category.Input",
     documentationUrl = "/pipeline/transforms/parquet-file-input.html",
     keywords = "i18n::ParquetInputMeta.keyword")
-public class ParquetInputEnhancedMeta extends BaseTransformMeta<ParquetInputEnhanced, ParquetInputEnhancedData> {
+public class ParquetInputEnhancedMeta
+    extends BaseTransformMeta<ParquetInputEnhanced, ParquetInputEnhancedData> {
 
   public static final Class<?> PKG = ParquetInputEnhancedMeta.class;
+
+  public static final String[] RequiredFilesDesc =
+      new String[] {
+        BaseMessages.getString(PKG, "System.Combo.No"),
+        BaseMessages.getString(PKG, "System.Combo.Yes")
+      };
+
+  /** Are we accepting filenames in input rows? */
+  @HopMetadataProperty @Getter @Setter private boolean acceptingFilenames;
+
+  /** If receiving input rows, should we pass through existing fields? */
+  @Getter @Setter @HopMetadataProperty private boolean passingThruFields;
+
+  /** The field in which the filename is placed */
+  @Getter @Setter @HopMetadataProperty private String acceptingField;
+
+  /** The transformName to accept filenames from */
+  @Getter @Setter @HopMetadataProperty private String acceptingTransformName;
+
+  /** The transform to accept filenames from */
+  @Getter @Setter private TransformMeta acceptingTransform;
+
+  @HopMetadataProperty(
+      key = "fileEntry",
+      groupKey = "fileEntries")
+  @Getter
+  @Setter
+  private List<ParquetFileItem> fileItems;
+
+  /** The add filenames to result filenames flag */
+  @HopMetadataProperty @Getter @Setter private boolean addFileResult;
 
   public static final String[] RequiredFilesCode = new String[] {"N", "Y"};
 
@@ -49,20 +85,18 @@ public class ParquetInputEnhancedMeta extends BaseTransformMeta<ParquetInputEnha
 
   public static final String YES = "Y";
 
-  public static final String[] RequiredFilesDesc =
-          new String[] {
-                  BaseMessages.getString(PKG, "System.Combo.No"),
-                  BaseMessages.getString(PKG, "System.Combo.Yes")
-          };
-
   @HopMetadataProperty(key = "filename_field")
   private String filenameField;
 
+  /** The fields to import... */
   @HopMetadataProperty(groupKey = "fields", key = "field")
-  private List<ParquetField> fields;
+  @Getter
+  @Setter
+  private List<ParquetFileInputField> fields;
 
   public ParquetInputEnhancedMeta() {
     fields = new ArrayList<>();
+    fileItems = new ArrayList<>();
   }
 
   @Override
@@ -76,7 +110,7 @@ public class ParquetInputEnhancedMeta extends BaseTransformMeta<ParquetInputEnha
       throws HopTransformException {
     // Add the fields to the input
     //
-    for (ParquetField field : fields) {
+    for (ParquetFileInputField field : fields) {
       try {
         IValueMeta valueMeta = field.createValueMeta();
         valueMeta.setOrigin(name);
@@ -98,25 +132,73 @@ public class ParquetInputEnhancedMeta extends BaseTransformMeta<ParquetInputEnha
   }
 
   /**
-   * @param filenameField The filenameField to set
-   */
-  public void setFilenameField(String filenameField) {
-    this.filenameField = filenameField;
-  }
-
-  /**
    * Gets fields
    *
    * @return value of fields
    */
-  public List<ParquetField> getFields() {
+  public List<ParquetFileInputField> getFields() {
     return fields;
   }
 
   /**
    * @param fields The fields to set
    */
-  public void setFields(List<ParquetField> fields) {
+  public void setFields(List<ParquetFileInputField> fields) {
     this.fields = fields;
+  }
+
+  public static String[] getFilePaths(IVariables variables, List<ParquetFileItem> fileItem) {
+
+    if (fileItem == null || fileItem.isEmpty()) {
+      return new String[0];
+    }
+
+    String[] fileName = new String[fileItem.size()];
+    String[] fileMask = new String[fileItem.size()];
+    String[] excludeFileMask = new String[fileItem.size()];
+    String[] fileRequired = new String[fileItem.size()];
+    boolean[] includeSubDirs = new boolean[fileItem.size()];
+    for (int i = 0; i < fileItem.size(); i++) {
+
+      ParquetFileItem item = fileItem.get(i);
+      fileName[i] = item.getFileName();
+      fileMask[i] = item.getFileMask();
+      excludeFileMask[i] = item.getExcludeFileMask();
+      fileRequired[i] = item.getFileRequired();
+      includeSubDirs[i] = YES.equals(item.getIncludeSubFolders());
+    }
+
+    List<FileObject> fileList =
+        FileInputList.createFileList(
+                variables, fileName, fileMask, excludeFileMask, fileRequired, includeSubDirs)
+            .getFiles();
+    String[] filePaths = new String[fileList.size()];
+
+    for (int i = 0; i < filePaths.length; ++i) {
+      filePaths[i] = ((FileObject) fileList.get(i)).getName().getURI();
+    }
+
+    return filePaths;
+  }
+
+  //
+  //  private boolean[] includeSubFolderBoolean() {
+  //    int len = fileName.length;
+  //    boolean[] includeSubFolderBoolean = new boolean[len];
+  //    for (int i = 0; i < len; i++) {
+  //      includeSubFolderBoolean[i] = YES.equalsIgnoreCase(includeSubFolders[i]);
+  //    }
+  //    return includeSubFolderBoolean;
+  //  }
+
+  public String getRequiredFilesDesc(String tt) {
+    if (tt == null) {
+      return RequiredFilesDesc[0];
+    }
+    if (tt.equals(RequiredFilesCode[1])) {
+      return RequiredFilesDesc[1];
+    } else {
+      return RequiredFilesDesc[0];
+    }
   }
 }

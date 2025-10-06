@@ -41,7 +41,9 @@ import org.apache.hop.pipeline.transform.ITransformDialog;
 import org.apache.hop.pipeline.transform.TransformMeta;
 import org.apache.hop.ui.core.PropsUi;
 import org.apache.hop.ui.core.dialog.BaseDialog;
+import org.apache.hop.ui.core.dialog.EnterSelectionDialog;
 import org.apache.hop.ui.core.dialog.ErrorDialog;
+import org.apache.hop.ui.core.dialog.MessageBox;
 import org.apache.hop.ui.core.gui.GuiResource;
 import org.apache.hop.ui.core.gui.WindowProperty;
 import org.apache.hop.ui.core.widget.ColumnInfo;
@@ -77,6 +79,10 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
   public static final Class<?> PKG = ParquetInputEnhancedMeta.class;
 
+  public static final String SYSTEM_COMBO_YES = "System.Combo.Yes";
+  public static final String SYSTEM_COMBO_NO = "System.Combo.No";
+  public static final String SYSTEM_DIALOG_ERROR_TITLE = "System.Dialog.Error.Title";
+
   private static final String[] YES_NO_COMBO =
       new String[] {
         BaseMessages.getString(PKG, "System.Combo.No"),
@@ -99,6 +105,10 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
   private Label wlFilemask;
   private TextVar wFilemask;
+  private Label wlExcludeFilemask;
+  private TextVar wExcludeFilemask;
+  private Label wlAddFileResult;
+  private Button wAddFileResult;
 
   private Button wbShowFiles;
   private Button wFirst;
@@ -113,8 +123,6 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
   private Label wlAccTransform;
   private CCombo wAccTransform;
-
-  private TextVar wExcludeFilemask;
 
   private String returnValue;
 
@@ -182,6 +190,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     PropsUi.setLook(wTabFolder, Props.WIDGET_STYLE_TAB);
 
     addFilesTab(wTabFolder, middle, margin);
+    addContentTab(wTabFolder, middle, margin);
     addFieldsTab(wTabFolder, middle, margin);
 
     FormData fdTabFolder = new FormData();
@@ -284,20 +293,97 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
                 shell,
                 wFilename,
                 variables,
-                new String[] {"*.txt", "*.csv", "*"},
+                new String[] {"*.parquet", "*"},
                 new String[] {
-                  BaseMessages.getString(PKG, "System.FileType.TextFiles"),
-                  BaseMessages.getString(PKG, "System.FileType.CSVFiles"),
+                  BaseMessages.getString(PKG, "ParquetInput.FileType.CSVFiles"),
                   BaseMessages.getString(PKG, "System.FileType.AllFiles")
                 },
                 true));
 
-    getData();
+    getData(input);
 
     wTabFolder.setSelection(0);
 
     BaseDialog.defaultShellHandling(shell, c -> ok(), c -> cancel());
     return returnValue;
+  }
+
+  private void addContentTab(CTabFolder wTabFolder, int middle, int margin) {
+
+    // ////////////////////////
+    // START OF CONTENT TAB///
+    // /
+    CTabItem wContentTab = new CTabItem(wTabFolder, SWT.NONE);
+    wContentTab.setFont(GuiResource.getInstance().getFontDefault());
+    wContentTab.setText(BaseMessages.getString(PKG, "ParquetInputDialog.ContentTab.TabTitle"));
+
+    FormLayout contentLayout = new FormLayout();
+    contentLayout.marginWidth = 3;
+    contentLayout.marginHeight = 3;
+
+    ScrolledComposite wContentSComp =
+        new ScrolledComposite(wTabFolder, SWT.V_SCROLL | SWT.H_SCROLL);
+    wContentSComp.setLayout(new FillLayout());
+
+    Composite wContentComp = new Composite(wContentSComp, SWT.NONE);
+    PropsUi.setLook(wContentComp);
+    wContentComp.setLayout(contentLayout);
+
+    // ///////////////////////////////
+    // START OF AddFileResult GROUP //
+    // ///////////////////////////////
+
+    Group gAddFileResult = new Group(wContentComp, SWT.SHADOW_NONE);
+    PropsUi.setLook(gAddFileResult);
+    gAddFileResult.setText(BaseMessages.getString(PKG, "ParquetInputDialog.gAddFileResult.Label"));
+
+    FormLayout addFileResultGroupLayout = new FormLayout();
+    addFileResultGroupLayout.marginWidth = 10;
+    addFileResultGroupLayout.marginHeight = 10;
+    gAddFileResult.setLayout(addFileResultGroupLayout);
+
+    wlAddFileResult = new Label(gAddFileResult, SWT.RIGHT);
+    wlAddFileResult.setText(BaseMessages.getString(PKG, "ParquetInputDialog.AddFileResult.Label"));
+    PropsUi.setLook(wlAddFileResult);
+    FormData fdlAddFileResult = new FormData();
+    fdlAddFileResult.left = new FormAttachment(0, 0);
+    fdlAddFileResult.top = new FormAttachment(wFilenameList, margin);
+    fdlAddFileResult.right = new FormAttachment(middle, -margin);
+    wlAddFileResult.setLayoutData(fdlAddFileResult);
+
+    wAddFileResult = new Button(gAddFileResult, SWT.CHECK);
+    PropsUi.setLook(wAddFileResult);
+    wAddFileResult.setToolTipText(
+        BaseMessages.getString(PKG, "ParquetInputDialog.AddFileResult.Tooltip"));
+    FormData fdAddFileResult = new FormData();
+    fdAddFileResult.left = new FormAttachment(middle, 0);
+    fdAddFileResult.top = new FormAttachment(wlAddFileResult, 0, SWT.CENTER);
+    wAddFileResult.setLayoutData(fdAddFileResult);
+
+    FormData fdgAddFileResult = new FormData();
+    fdgAddFileResult.left = new FormAttachment(0, margin);
+    fdgAddFileResult.top = new FormAttachment(0, margin);
+    fdgAddFileResult.right = new FormAttachment(100, -margin);
+    gAddFileResult.setLayoutData(fdgAddFileResult);
+
+    wContentComp.pack();
+    // What's the size:
+    Rectangle bounds = wContentComp.getBounds();
+
+    wContentSComp.setContent(wContentComp);
+    wContentSComp.setExpandHorizontal(true);
+    wContentSComp.setExpandVertical(true);
+    wContentSComp.setMinWidth(bounds.width);
+    wContentSComp.setMinHeight(bounds.height);
+
+    FormData fdContentComp = new FormData();
+    fdContentComp.left = new FormAttachment(0, 0);
+    fdContentComp.top = new FormAttachment(0, 0);
+    fdContentComp.right = new FormAttachment(100, 0);
+    fdContentComp.bottom = new FormAttachment(100, 0);
+    wContentComp.setLayoutData(fdContentComp);
+
+    wContentTab.setControl(wContentSComp);
   }
 
   private void addFilesTab(CTabFolder wTabFolder, int middle, int margin) {
@@ -378,7 +464,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdFilemask.right = new FormAttachment(wbaFilename, -margin);
     wFilemask.setLayoutData(fdFilemask);
 
-    Label wlExcludeFilemask = new Label(wFileComp, SWT.RIGHT);
+    wlExcludeFilemask = new Label(wFileComp, SWT.RIGHT);
     wlExcludeFilemask.setText(
         BaseMessages.getString(PKG, "ParquetInputDialog.ExcludeFilemask.Label"));
     PropsUi.setLook(wlExcludeFilemask);
@@ -387,6 +473,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdlExcludeFilemask.top = new FormAttachment(wFilemask, margin);
     fdlExcludeFilemask.right = new FormAttachment(middle, -margin);
     wlExcludeFilemask.setLayoutData(fdlExcludeFilemask);
+
     wExcludeFilemask = new TextVar(variables, wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
     PropsUi.setLook(wExcludeFilemask);
     wExcludeFilemask.addModifyListener(lsMod);
@@ -594,7 +681,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
             wFileComp,
             SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER,
             colinfo,
-            4,
+            0,
             lsMod,
             props);
     PropsUi.setLook(wFilenameList);
@@ -742,6 +829,9 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     wFilenameList.setEnabled(!accept);
     wlFilemask.setEnabled(!accept);
     wFilemask.setEnabled(!accept);
+    wlExcludeFilemask.setEnabled(!accept);
+    wExcludeFilemask.setEnabled(!accept);
+    wFilemask.setEnabled(!accept);
     wbShowFiles.setEnabled(!accept);
 
     wFirst.setEnabled(!accept);
@@ -758,6 +848,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
               new String[] {"*.parquet*", "*.*"},
               new String[] {"Parquet files", "All files"},
               true);
+
       if (filename != null) {
         FileObject fileObject = HopVfs.getFileObject(variables.resolve(filename));
 
@@ -805,6 +896,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
               hopType = IValueMeta.TYPE_INTEGER;
               break;
             case INT96:
+            case BINARY:
               hopType = IValueMeta.TYPE_BINARY;
               break;
             case FLOAT:
@@ -845,31 +937,67 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
   }
 
   private void showFiles() {
-    // TODO
+    // TODO (SR)
+    ParquetInputEnhancedMeta pfm = new ParquetInputEnhancedMeta();
+    getInfo(pfm);
+    String[] files = pfm.getFilePaths(variables, pfm.getFileItems());
+    if (files != null && files.length > 0) {
+      EnterSelectionDialog esd =
+          new EnterSelectionDialog(shell, files, "Files read", "Files read:");
+      esd.setViewOnly();
+      esd.open();
+    } else {
+      MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_ERROR);
+      mb.setMessage(BaseMessages.getString(PKG, "ParquetInputDialog.NoFilesFound.DialogMessage"));
+      mb.setText(BaseMessages.getString(PKG, SYSTEM_DIALOG_ERROR_TITLE));
+      mb.open();
+    }
   }
 
-  private void getData() {
-    //    try {
-    //      wFilenameField.setItems(
-    //          pipelineMeta.getPrevTransformFields(variables, transformName).getFieldNames());
-    //    } catch (Exception e) {
-    //      LogChannel.UI.logError("Error getting source fields", e);
-    //    }
+  private void getData(ParquetInputEnhancedMeta meta) {
 
     wTransformName.setText(Const.NVL(transformName, ""));
-    //  SR
-    //  wFilenameField.setText(Const.NVL(input.getFilenameField(), ""));
-    for (int i = 0; i < input.getFields().size(); i++) {
-      ParquetField field = input.getFields().get(i);
-      TableItem item = wFields.table.getItem(i);
-      int index = 1;
-      item.setText(index++, Const.NVL(field.getSourceField(), ""));
-      item.setText(index++, Const.NVL(field.getTargetField(), ""));
-      item.setText(index++, Const.NVL(field.getTargetType(), ""));
-      item.setText(index++, Const.NVL(field.getTargetFormat(), ""));
-      item.setText(index++, Const.NVL(field.getTargetLength(), ""));
-      item.setText(index++, Const.NVL(field.getTargetPrecision(), ""));
+    wAccFilenames.setSelection(meta.isAcceptingFilenames());
+    wPassThruFields.setSelection(meta.isPassingThruFields());
+    if (meta.getAcceptingField() != null) {
+      wAccField.setText(meta.getAcceptingField());
     }
+    if (meta.getAcceptingTransform() != null) {
+      wAccTransform.setText(meta.getAcceptingTransform().getName());
+    }
+
+    wAddFileResult.setSelection(meta.isAddFileResult());
+
+    int nrFiles = meta.getFileItems().size();
+    if (meta.getFileItems() != null && nrFiles > 0) {
+      wFilenameList.removeAll();
+
+      for (int i = 0; i < nrFiles; i++) {
+        ParquetFileItem f = meta.getFileItems().get(i);
+        wFilenameList.add(
+            f.getFileName(),
+            f.getFileMask(),
+            f.getExcludeFileMask(),
+            meta.getRequiredFilesDesc(f.getFileRequired()),
+            meta.getRequiredFilesDesc(f.getIncludeSubFolders()));
+      }
+      wFilenameList.removeEmptyRows();
+      wFilenameList.setRowNums();
+      wFilenameList.optWidth(true);
+    }
+
+    for (int i = 0; i < input.getFields().size(); i++) {
+      ParquetFileInputField field = input.getFields().get(i);
+      TableItem item = wFields.table.getItem(i);
+      item.setText(1, Const.NVL(field.getSourceField(), ""));
+      item.setText(2, Const.NVL(field.getTargetField(), ""));
+      item.setText(3, Const.NVL(field.getTargetType(), ""));
+      item.setText(4, Const.NVL(field.getTargetFormat(), ""));
+      item.setText(5, String.valueOf(field.getTargetLength()));
+      item.setText(6, String.valueOf(field.getTargetPrecision()));
+    }
+
+    setFlags();
   }
 
   private void ok() {
@@ -882,19 +1010,52 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
   private void getInfo(ParquetInputEnhancedMeta meta) {
     // SR
-    // meta.setFilenameField(wFilenameField.getText());
-    meta.getFields().clear();
-    for (TableItem item : wFields.getNonEmptyItems()) {
-      int index = 1;
-      meta.getFields()
-          .add(
-              new ParquetField(
-                  item.getText(index++),
-                  item.getText(index++),
-                  item.getText(index++),
-                  item.getText(index++),
-                  item.getText(index++),
-                  item.getText(index)));
+    transformName = wTransformName.getText();
+
+    // copy info to TextFileInputMeta class (input)
+    meta.setAcceptingFilenames(wAccFilenames.getSelection());
+    meta.setPassingThruFields(wPassThruFields.getSelection());
+    meta.setAcceptingField(wAccField.getText());
+    meta.setAcceptingTransformName(wAccTransform.getText());
+    meta.setAcceptingTransform(pipelineMeta.findTransform(wAccTransform.getText()));
+
+    meta.setAddFileResult(wAddFileResult.getSelection());
+
+    int nrFiles = wFilenameList.nrNonEmpty();
+    int nrFields = wFields.nrNonEmpty();
+
+    if (meta.getFields() != null && nrFields > 0) {
+      meta.getFileItems().clear();
+    }
+
+    for (int i = 0; i < nrFields; i++) {
+      ParquetFileInputField field = new ParquetFileInputField();
+
+      TableItem item = wFields.getNonEmpty(i);
+      field.setSourceField(item.getText(1));
+      field.setTargetField(item.getText(2));
+      field.setTargetType(item.getText(3));
+      field.setTargetFormat(item.getText(4));
+      field.setTargetLength(Const.toInt(item.getText(5), -1));
+      field.setTargetPrecision(Const.toInt(item.getText(6), -1));
+
+      meta.getFields().add(field);
+    }
+
+    if (meta.getFileItems() != null && nrFiles > 0)
+        meta.getFileItems().clear();
+
+    for (int i = 0; i < nrFiles; i++) {
+      TableItem item = wFilenameList.getNonEmpty(i);
+
+      ParquetFileItem fileItem = new ParquetFileItem();
+      fileItem.setFileName(item.getText(1));
+      fileItem.setFileMask(item.getText(2));
+      fileItem.setExcludeFileMask(item.getText(3));
+      fileItem.setFileRequired(item.getText(4));
+      fileItem.setIncludeSubFolders(item.getText(5));
+
+      meta.getFileItems().add(fileItem);
     }
   }
 
