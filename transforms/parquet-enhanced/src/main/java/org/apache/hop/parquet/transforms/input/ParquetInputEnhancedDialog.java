@@ -111,8 +111,6 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
   private Button wAddFileResult;
 
   private Button wbShowFiles;
-  private Button wFirst;
-  private Button wFirstHeader;
   private Button wAccFilenames;
 
   private Label wlPassThruFields;
@@ -200,8 +198,6 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdTabFolder.bottom = new FormAttachment(wOk, -2 * margin);
     wTabFolder.setLayoutData(fdTabFolder);
 
-    wFirst.addListener(SWT.Selection, e -> first(false));
-    wFirstHeader.addListener(SWT.Selection, e -> first(true));
     wGet.addListener(SWT.Selection, e -> get());
 
     // Add the file to the list of files...
@@ -523,20 +519,6 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdbShowFiles.bottom = new FormAttachment(100, 0);
     wbShowFiles.setLayoutData(fdbShowFiles);
 
-    wFirst = new Button(wFileComp, SWT.PUSH);
-    wFirst.setText(BaseMessages.getString(PKG, "ParquetInputDialog.First.Button"));
-    FormData fdFirst = new FormData();
-    fdFirst.left = new FormAttachment(wbShowFiles, margin * 2);
-    fdFirst.bottom = new FormAttachment(100, 0);
-    wFirst.setLayoutData(fdFirst);
-
-    wFirstHeader = new Button(wFileComp, SWT.PUSH);
-    wFirstHeader.setText(BaseMessages.getString(PKG, "ParquetInputDialog.FirstHeader.Button"));
-    FormData fdFirstHeader = new FormData();
-    fdFirstHeader.left = new FormAttachment(wFirst, margin * 2);
-    fdFirstHeader.bottom = new FormAttachment(100, 0);
-    wFirstHeader.setLayoutData(fdFirstHeader);
-
     // Accepting filenames group
     //
 
@@ -637,7 +619,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     FormData fdAccepting = new FormData();
     fdAccepting.left = new FormAttachment(0, 0);
     fdAccepting.right = new FormAttachment(100, 0);
-    fdAccepting.bottom = new FormAttachment(wFirstHeader, -margin * 2);
+    fdAccepting.bottom = new FormAttachment(wbShowFiles, -margin * 2);
     gAccepting.setLayoutData(fdAccepting);
 
     ColumnInfo[] colinfo =
@@ -770,6 +752,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
               true,
               false),
         };
+
     wFields =
         new TableView(
             variables,
@@ -777,9 +760,9 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
             SWT.BORDER,
             columns,
             input.getFields().size(),
-            false,
             null,
             props);
+
     PropsUi.setLook(wFields);
     FormData fdFields = new FormData();
     fdFields.left = new FormAttachment(0, 0);
@@ -833,9 +816,6 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     wExcludeFilemask.setEnabled(!accept);
     wFilemask.setEnabled(!accept);
     wbShowFiles.setEnabled(!accept);
-
-    wFirst.setEnabled(!accept);
-    wFirstHeader.setEnabled(!accept);
   }
 
   private void getFields() {
@@ -931,13 +911,8 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     // TODO
   }
 
-  // Get the first x lines
-  private void first(boolean skipHeaders) {
-    // TODO
-  }
-
   private void showFiles() {
-    // TODO (SR)
+
     ParquetInputEnhancedMeta pfm = new ParquetInputEnhancedMeta();
     getInfo(pfm);
     String[] files = pfm.getFilePaths(variables, pfm.getFileItems());
@@ -970,7 +945,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
     int nrFiles = meta.getFileItems().size();
     if (meta.getFileItems() != null && nrFiles > 0) {
-      wFilenameList.removeAll();
+      wFilenameList.clearAll();
 
       for (int i = 0; i < nrFiles; i++) {
         ParquetFileItem f = meta.getFileItems().get(i);
@@ -981,6 +956,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
             meta.getRequiredFilesDesc(f.getFileRequired()),
             meta.getRequiredFilesDesc(f.getIncludeSubFolders()));
       }
+
       wFilenameList.removeEmptyRows();
       wFilenameList.setRowNums();
       wFilenameList.optWidth(true);
@@ -996,6 +972,10 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
       item.setText(5, String.valueOf(field.getTargetLength()));
       item.setText(6, String.valueOf(field.getTargetPrecision()));
     }
+
+    wFields.removeEmptyRows();
+    wFields.setRowNums();
+    wFields.optWidth(true);
 
     setFlags();
   }
@@ -1024,10 +1004,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     int nrFiles = wFilenameList.nrNonEmpty();
     int nrFields = wFields.nrNonEmpty();
 
-    if (meta.getFields() != null && nrFields > 0) {
-      meta.getFileItems().clear();
-    }
-
+    meta.getFields().clear();
     for (int i = 0; i < nrFields; i++) {
       ParquetFileInputField field = new ParquetFileInputField();
 
@@ -1042,8 +1019,9 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
       meta.getFields().add(field);
     }
 
-    if (meta.getFileItems() != null && nrFiles > 0)
-        meta.getFileItems().clear();
+    meta.getFileItems().clear();
+
+    if (meta.getFileItems() != null && nrFiles > 0) meta.getFileItems().clear();
 
     for (int i = 0; i < nrFiles; i++) {
       TableItem item = wFilenameList.getNonEmpty(i);
