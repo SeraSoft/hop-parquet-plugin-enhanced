@@ -27,6 +27,7 @@ import org.apache.hop.core.Const;
 import org.apache.hop.core.Props;
 import org.apache.hop.core.RowMetaAndData;
 import org.apache.hop.core.exception.HopException;
+import org.apache.hop.core.exception.HopTransformException;
 import org.apache.hop.core.logging.LogChannel;
 import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.IValueMeta;
@@ -117,7 +118,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
   private Button wPassThruFields;
 
   private Label wlAccField;
-  private Text wAccField;
+  private CCombo wAccField;
 
   private Label wlAccTransform;
   private CCombo wAccTransform;
@@ -590,6 +591,13 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdAccTransform.right = new FormAttachment(100, 0);
     wAccTransform.setLayoutData(fdAccTransform);
 
+    // Fill in the source transforms...
+    List<TransformMeta> prevTransforms =
+        pipelineMeta.findPreviousTransforms(pipelineMeta.findTransform(transformName));
+    for (TransformMeta prevTransform : prevTransforms) {
+      wAccTransform.add(prevTransform.getName());
+    }
+
     // Which field?
     //
     wlAccField = new Label(gAccepting, SWT.RIGHT);
@@ -600,21 +608,29 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdlAccField.left = new FormAttachment(0, 0);
     fdlAccField.right = new FormAttachment(middle, -margin);
     wlAccField.setLayoutData(fdlAccField);
-    wAccField = new Text(gAccepting, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+
+    wAccField = new CCombo(gAccepting, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    IRowMeta previousFields;
+    try {
+      previousFields = pipelineMeta.getPrevTransformFields(variables, transformMeta);
+    } catch (HopTransformException e) {
+      new ErrorDialog(
+          shell,
+          BaseMessages.getString(PKG, "ParquetInputDialog.ErrorDialog.UnableToGetInputFields.Title"),
+          BaseMessages.getString(
+              PKG, "ParquetInputDialog.ErrorDialog.UnableToGetInputFields.Message"),
+          e);
+      previousFields = new RowMeta();
+    }
+    wAccField.setItems(previousFields.getFieldNames());
     wAccField.setToolTipText(BaseMessages.getString(PKG, "ParquetInputDialog.AcceptField.Tooltip"));
+
     PropsUi.setLook(wAccField);
     FormData fdAccField = new FormData();
     fdAccField.top = new FormAttachment(wAccTransform, margin);
     fdAccField.left = new FormAttachment(middle, 0);
     fdAccField.right = new FormAttachment(100, 0);
     wAccField.setLayoutData(fdAccField);
-
-    // Fill in the source transforms...
-    List<TransformMeta> prevTransforms =
-        pipelineMeta.findPreviousTransforms(pipelineMeta.findTransform(transformName));
-    for (TransformMeta prevTransform : prevTransforms) {
-      wAccTransform.add(prevTransform.getName());
-    }
 
     FormData fdAccepting = new FormData();
     fdAccepting.left = new FormAttachment(0, 0);
@@ -937,8 +953,8 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     if (meta.getAcceptingField() != null) {
       wAccField.setText(meta.getAcceptingField());
     }
-    if (meta.getAcceptingTransform() != null) {
-      wAccTransform.setText(meta.getAcceptingTransform().getName());
+    if (meta.getAcceptingTransformName() != null) {
+      wAccTransform.setText(meta.getAcceptingTransformName());
     }
 
     wAddFileResult.setSelection(meta.isAddResultFile());
