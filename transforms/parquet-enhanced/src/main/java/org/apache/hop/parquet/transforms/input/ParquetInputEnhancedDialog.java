@@ -941,7 +941,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
       wAccTransform.setText(meta.getAcceptingTransform().getName());
     }
 
-    wAddFileResult.setSelection(meta.isAddFileResult());
+    wAddFileResult.setSelection(meta.isAddResultFile());
 
     int nrFiles = meta.getFileItems().size();
     if (meta.getFileItems() != null && nrFiles > 0) {
@@ -999,7 +999,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     meta.setAcceptingTransformName(wAccTransform.getText());
     meta.setAcceptingTransform(pipelineMeta.findTransform(wAccTransform.getText()));
 
-    meta.setAddFileResult(wAddFileResult.getSelection());
+    meta.setAddResultFile(wAddFileResult.getSelection());
 
     int nrFiles = wFilenameList.nrNonEmpty();
     int nrFields = wFields.nrNonEmpty();

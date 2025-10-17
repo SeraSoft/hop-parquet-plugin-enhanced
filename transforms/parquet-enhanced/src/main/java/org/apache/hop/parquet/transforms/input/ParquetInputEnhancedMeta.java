@@ -69,15 +69,13 @@ public class ParquetInputEnhancedMeta
   /** The transform to accept filenames from */
   @Getter @Setter private TransformMeta acceptingTransform;
 
-  @HopMetadataProperty(
-      key = "fileEntry",
-      groupKey = "fileEntries")
+  @HopMetadataProperty(key = "fileEntry", groupKey = "fileEntries")
   @Getter
   @Setter
   private List<ParquetFileItem> fileItems;
 
   /** The add filenames to result filenames flag */
-  @HopMetadataProperty @Getter @Setter private boolean addFileResult;
+  @HopMetadataProperty @Getter @Setter private boolean addResultFile;
 
   public static final String[] RequiredFilesCode = new String[] {"N", "Y"};
 
@@ -147,38 +145,48 @@ public class ParquetInputEnhancedMeta
     this.fields = fields;
   }
 
-  public static String[] getFilePaths(IVariables variables, List<ParquetFileItem> fileItem) {
+  public String[] getFilePaths(IVariables variables, List<ParquetFileItem> fileItems) {
+    String[] filePaths = new String[0];
 
-    if (fileItem == null || fileItem.isEmpty()) {
-      return new String[0];
+    if (!(fileItems == null || fileItems.isEmpty())) {
+
+      FileInputList fil = getFileList(variables);
+      List<FileObject> fileList = fil.getFiles();
+
+      if (!(fileList == null || fileList.isEmpty())) {
+        filePaths = new String[fileList.size()];
+
+        for (int i = 0; i < filePaths.length; ++i) {
+          filePaths[i] = ((FileObject) fileList.get(i)).getName().getURI();
+        }
+      }
+    }
+    return filePaths;
+  }
+
+  public FileInputList getFileList(IVariables variables) {
+
+    if (fileItems == null || fileItems.isEmpty()) {
+      return null;
     }
 
-    String[] fileName = new String[fileItem.size()];
-    String[] fileMask = new String[fileItem.size()];
-    String[] excludeFileMask = new String[fileItem.size()];
-    String[] fileRequired = new String[fileItem.size()];
-    boolean[] includeSubDirs = new boolean[fileItem.size()];
-    for (int i = 0; i < fileItem.size(); i++) {
+    String[] fileName = new String[fileItems.size()];
+    String[] fileMask = new String[fileItems.size()];
+    String[] excludeFileMask = new String[fileItems.size()];
+    String[] fileRequired = new String[fileItems.size()];
+    boolean[] includeSubDirs = new boolean[fileItems.size()];
+    for (int i = 0; i < fileItems.size(); i++) {
 
-      ParquetFileItem item = fileItem.get(i);
-      fileName[i] = item.getFileName();
-      fileMask[i] = item.getFileMask();
-      excludeFileMask[i] = item.getExcludeFileMask();
+      ParquetFileItem item = fileItems.get(i);
+      fileName[i] = variables.resolve(item.getFileName());
+      fileMask[i] = variables.resolve(item.getFileMask());
+      excludeFileMask[i] = variables.resolve(item.getExcludeFileMask());
       fileRequired[i] = item.getFileRequired();
       includeSubDirs[i] = YES.equals(item.getIncludeSubFolders());
     }
 
-    List<FileObject> fileList =
-        FileInputList.createFileList(
-                variables, fileName, fileMask, excludeFileMask, fileRequired, includeSubDirs)
-            .getFiles();
-    String[] filePaths = new String[fileList.size()];
-
-    for (int i = 0; i < filePaths.length; ++i) {
-      filePaths[i] = ((FileObject) fileList.get(i)).getName().getURI();
-    }
-
-    return filePaths;
+    return FileInputList.createFileList(
+        variables, fileName, fileMask, excludeFileMask, fileRequired, includeSubDirs);
   }
 
   //
