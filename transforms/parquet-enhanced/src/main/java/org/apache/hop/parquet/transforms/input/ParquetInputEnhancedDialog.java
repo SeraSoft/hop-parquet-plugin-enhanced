@@ -199,10 +199,10 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     CTabFolder wTabFolder = new CTabFolder(shell, SWT.BORDER);
     PropsUi.setLook(wTabFolder, Props.WIDGET_STYLE_TAB);
 
-    addFilesTab(wTabFolder, middle, margin);
-    addContentTab(wTabFolder, middle, margin);
-    addFieldsTab(wTabFolder, middle, margin);
-    addAdditionalFieldsTab(wTabFolder, middle, margin);
+    addFilesTab(wTabFolder, middle, margin, lsMod);
+    addContentTab(wTabFolder, middle, margin, lsMod);
+    addFieldsTab(wTabFolder, middle, margin, lsMod);
+    addAdditionalFieldsTab(wTabFolder, middle, margin, lsMod);
 
     FormData fdTabFolder = new FormData();
     fdTabFolder.left = new FormAttachment(0, 0);
@@ -317,7 +317,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     return returnValue;
   }
 
-  private void addContentTab(CTabFolder wTabFolder, int middle, int margin) {
+  private void addContentTab(CTabFolder wTabFolder, int middle, int margin, ModifyListener lsMod) {
 
     // ////////////////////////
     // START OF CONTENT TAB///
@@ -368,6 +368,12 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdAddFileResult.left = new FormAttachment(middle, 0);
     fdAddFileResult.top = new FormAttachment(wlAddFileResult, 0, SWT.CENTER);
     wAddFileResult.setLayoutData(fdAddFileResult);
+    wAddFileResult.addSelectionListener(new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            input.setChanged();
+        }
+    });
 
     FormData fdgAddFileResult = new FormData();
     fdgAddFileResult.left = new FormAttachment(0, margin);
@@ -395,7 +401,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     wContentTab.setControl(wContentSComp);
   }
 
-  private void addAdditionalFieldsTab(CTabFolder wTabFolder, int middle, int margin) {
+  private void addAdditionalFieldsTab(CTabFolder wTabFolder, int middle, int margin, ModifyListener lsMod) {
     //
     // START OF ADDITIONAL FIELDS TAB /
     //
@@ -428,6 +434,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdInclFilenameField.top = new FormAttachment(wTransformName, margin);
     fdInclFilenameField.right = new FormAttachment(100, 0);
     wInclFilenameField.setLayoutData(fdInclFilenameField);
+    wInclFilenameField.addModifyListener(lsMod);
 
     // ShortFileFieldName line
     Label wlShortFileFieldName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
@@ -447,6 +454,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdShortFileFieldName.right = new FormAttachment(100, -margin);
     fdShortFileFieldName.top = new FormAttachment(wInclRowNumField, margin);
     wShortFileFieldName.setLayoutData(fdShortFileFieldName);
+    wShortFileFieldName.addModifyListener(lsMod);
 
     // ExtensionFieldName line
     Label wlExtensionFieldName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
@@ -466,6 +474,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdExtensionFieldName.right = new FormAttachment(100, -margin);
     fdExtensionFieldName.top = new FormAttachment(wShortFileFieldName, margin);
     wExtensionFieldName.setLayoutData(fdExtensionFieldName);
+    wExtensionFieldName.addModifyListener(lsMod);
 
     // PathFieldName line
     Label wlPathFieldName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
@@ -484,6 +493,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdPathFieldName.right = new FormAttachment(100, -margin);
     fdPathFieldName.top = new FormAttachment(wExtensionFieldName, margin);
     wPathFieldName.setLayoutData(fdPathFieldName);
+    wPathFieldName.addModifyListener(lsMod);
 
     // SizeFieldName line
     Label wlSizeFieldName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
@@ -502,6 +512,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdSizeFieldName.right = new FormAttachment(100, -margin);
     fdSizeFieldName.top = new FormAttachment(wPathFieldName, margin);
     wSizeFieldName.setLayoutData(fdSizeFieldName);
+    wSizeFieldName.addModifyListener(lsMod);
 
     // IsHiddenName line
     Label wlIsHiddenName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
@@ -520,6 +531,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdIsHiddenName.right = new FormAttachment(100, -margin);
     fdIsHiddenName.top = new FormAttachment(wSizeFieldName, margin);
     wIsHiddenName.setLayoutData(fdIsHiddenName);
+    wIsHiddenName.addModifyListener(lsMod);
 
     // LastModificationTimeName line
     Label wlLastModificationTimeName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
@@ -539,6 +551,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdLastModificationTimeName.right = new FormAttachment(100, -margin);
     fdLastModificationTimeName.top = new FormAttachment(wIsHiddenName, margin);
     wLastModificationTimeName.setLayoutData(fdLastModificationTimeName);
+    wLastModificationTimeName.addModifyListener(lsMod);
 
     // UriName line
     Label wlUriName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
@@ -557,6 +570,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdUriName.right = new FormAttachment(100, -margin);
     fdUriName.top = new FormAttachment(wLastModificationTimeName, margin);
     wUriName.setLayoutData(fdUriName);
+    wUriName.addModifyListener(lsMod);
 
     // RootUriName line
     Label wlRootUriName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
@@ -575,6 +589,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdRootUriName.right = new FormAttachment(100, -margin);
     fdRootUriName.top = new FormAttachment(wUriName, margin);
     wRootUriName.setLayoutData(fdRootUriName);
+    wRootUriName.addModifyListener(lsMod);
 
     FormData fdAdditionalFieldsComp = new FormData();
     fdAdditionalFieldsComp.left = new FormAttachment(0, 0);
@@ -591,7 +606,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     //
   }
 
-  private void addFilesTab(CTabFolder wTabFolder, int middle, int margin) {
+  private void addFilesTab(CTabFolder wTabFolder, int middle, int margin, ModifyListener lsMod) {
     // ////////////////////////
     // START OF FILE TAB ///
     // ////////////////////////
@@ -643,7 +658,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
     wFilename = new TextVar(variables, wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
     PropsUi.setLook(wFilename);
-    wFilename.addModifyListener(lsMod);
+    wFilename.addModifyListener(this.lsMod);
     FormData fdFilename = new FormData();
     fdFilename.left = new FormAttachment(middle, 0);
     fdFilename.right = new FormAttachment(wbaFilename, -margin);
@@ -662,7 +677,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     wFilemask = new TextVar(variables, wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 
     PropsUi.setLook(wFilemask);
-    wFilemask.addModifyListener(lsMod);
+    wFilemask.addModifyListener(this.lsMod);
     FormData fdFilemask = new FormData();
     fdFilemask.left = new FormAttachment(middle, 0);
     fdFilemask.top = new FormAttachment(wFilename, margin);
@@ -681,7 +696,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
     wExcludeFilemask = new TextVar(variables, wFileComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
     PropsUi.setLook(wExcludeFilemask);
-    wExcludeFilemask.addModifyListener(lsMod);
+    wExcludeFilemask.addModifyListener(this.lsMod);
     FormData fdExcludeFilemask = new FormData();
     fdExcludeFilemask.left = new FormAttachment(middle, 0);
     fdExcludeFilemask.top = new FormAttachment(wFilemask, margin);
@@ -758,6 +773,12 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdAccFilenames.left = new FormAttachment(middle, 0);
     fdAccFilenames.right = new FormAttachment(100, 0);
     wAccFilenames.setLayoutData(fdAccFilenames);
+    wAccFilenames.addSelectionListener(new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            input.setChanged();
+        }
+    });
 
     // Accept filenames from previous transforms?
     //
@@ -798,6 +819,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdAccTransform.left = new FormAttachment(middle, 0);
     fdAccTransform.right = new FormAttachment(100, 0);
     wAccTransform.setLayoutData(fdAccTransform);
+    wAccTransform.addModifyListener(lsMod);
 
     // Fill in the source transforms...
     List<TransformMeta> prevTransforms =
@@ -833,6 +855,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     }
     wAccField.setItems(previousFields.getFieldNames());
     wAccField.setToolTipText(BaseMessages.getString(PKG, "ParquetInputDialog.AcceptField.Tooltip"));
+    wAccField.addModifyListener(lsMod);
 
     PropsUi.setLook(wAccField);
     FormData fdAccField = new FormData();
@@ -889,7 +912,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
             SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER,
             colinfo,
             0,
-            lsMod,
+                this.lsMod,
             props);
     PropsUi.setLook(wFilenameList);
     FormData fdFilenameList = new FormData();
@@ -922,7 +945,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     // ///////////////////////////////////////////////////////////
   }
 
-  private void addFieldsTab(CTabFolder wTabFolder, int middle, int margin) {
+  private void addFieldsTab(CTabFolder wTabFolder, int middle, int margin, ModifyListener lsMod) {
 
     CTabItem wFieldsTab = new CTabItem(wTabFolder, SWT.NONE);
     wFieldsTab.setFont(GuiResource.getInstance().getFontDefault());
@@ -1219,7 +1242,6 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     returnValue = wTransformName.getText();
 
     getInfo(input);
-    input.setChanged();
     dispose();
   }
 

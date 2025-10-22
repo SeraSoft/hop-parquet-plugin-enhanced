@@ -174,6 +174,13 @@ public class ParquetInputEnhanced
       data.file = data.files.getFile(data.filenr);
       data.filename = HopVfs.getFilename(data.file);
 
+      if (meta.isAddResultFile()) {
+        ResultFile resultFile =
+            new ResultFile(
+                ResultFile.FILE_TYPE_GENERAL, data.file, getPipelineMeta().getName(), toString());
+        addResultFile(resultFile);
+      }
+
       // Add additional fields?
       if (StringUtils.isNotEmpty(meta.getShortFileFieldName())) {
         data.shortFilename = data.file.getName().getBaseName();
