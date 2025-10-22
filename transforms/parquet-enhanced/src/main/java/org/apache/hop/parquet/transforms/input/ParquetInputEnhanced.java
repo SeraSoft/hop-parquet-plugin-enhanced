@@ -19,10 +19,13 @@ package org.apache.hop.parquet.transforms.input;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.hop.core.IRowSet;
+import org.apache.hop.core.Result;
 import org.apache.hop.core.ResultFile;
 import org.apache.hop.core.RowMetaAndData;
 import org.apache.hop.core.exception.HopException;
@@ -55,6 +58,11 @@ public class ParquetInputEnhanced
   @Override
   public boolean init() {
     if (super.init()) {
+
+      Result previousResult = getPipeline().getPreviousResult();
+      Map<String, ResultFile> resultFiles =
+          (previousResult != null) ? previousResult.getResultFiles() : null;
+
       data.files = meta.getFileList(this);
       if (data.files.nrOfFiles() == 0
           && data.files.nrOfMissingFiles() > 0
@@ -81,11 +89,12 @@ public class ParquetInputEnhanced
         data.files.getFiles().clear();
 
         int idx = -1;
-        IRowSet rowSet = findInputRowSet(meta.getAcceptingTransformName());
-        Object[] fileRow = getRowFrom(rowSet);
+        data.rowSet = findInputRowSet(meta.getAcceptingTransformName());
+
+        Object[] fileRow = getRowFrom(data.rowSet);
         while (fileRow != null) {
           if (idx < 0) {
-            idx = rowSet.getRowMeta().indexOfValue(meta.getAcceptingField());
+            idx = data.rowSet.getRowMeta().indexOfValue(meta.getAcceptingField());
             if (idx < 0) {
               logError(
                   BaseMessages.getString(
@@ -98,7 +107,7 @@ public class ParquetInputEnhanced
               return false;
             }
           }
-          String fileValue = rowSet.getRowMeta().getString(fileRow, idx);
+          String fileValue = data.rowSet.getRowMeta().getString(fileRow, idx);
           try {
             data.files.addFile(HopVfs.getFileObject(fileValue, variables));
           } catch (HopFileException e) {
@@ -109,7 +118,7 @@ public class ParquetInputEnhanced
           }
 
           // Grab another row
-          fileRow = getRowFrom(rowSet);
+          fileRow = getRowFrom(data.rowSet);
         }
       }
 
@@ -166,32 +175,30 @@ public class ParquetInputEnhanced
       data.filename = HopVfs.getFilename(data.file);
 
       // Add additional fields?
-      // (SR) Nice to have
-      //        if (StringUtils.isNotEmpty(meta.getShortFileFieldName())) {
-      //            data.shortFilename = data.file.getName().getBaseName();
-      //        }
-      //        if (StringUtils.isNotEmpty(meta.getPathFieldName())) {
-      //            data.path = HopVfs.getFilename(data.file.getParent());
-      //        }
-      //        if (StringUtils.isNotEmpty(meta.getHiddenFieldName())) {
-      //            data.hidden = data.file.isHidden();
-      //        }
-      //        if (StringUtils.isNotEmpty(meta.getExtensionFieldName())) {
-      //            data.extension = data.file.getName().getExtension();
-      //        }
-      //        if (StringUtils.isNotEmpty(meta.getLastModificationTimeFieldName())) {
-      //            data.lastModificationDateTime = new
-      // Date(data.file.getContent().getLastModifiedTime());
-      //        }
-      //        if (StringUtils.isNotEmpty(meta.getUriNameFieldName())) {
-      //            data.uriName = data.file.getName().getURI();
-      //        }
-      //        if (StringUtils.isNotEmpty(meta.getRootUriNameFieldName())) {
-      //            data.rootUriName = data.file.getName().getRootURI();
-      //        }
-      //        if (StringUtils.isNotEmpty(meta.getSizeFieldName())) {
-      data.size = data.file.getContent().getSize();
-      //        }
+      if (StringUtils.isNotEmpty(meta.getShortFileFieldName())) {
+        data.shortFilename = data.file.getName().getBaseName();
+      }
+      if (StringUtils.isNotEmpty(meta.getPathFieldName())) {
+        data.path = HopVfs.getFilename(data.file.getParent());
+      }
+      if (StringUtils.isNotEmpty(meta.getHiddenFieldName())) {
+        data.hidden = data.file.isHidden();
+      }
+      if (StringUtils.isNotEmpty(meta.getExtensionFieldName())) {
+        data.extension = data.file.getName().getExtension();
+      }
+      if (StringUtils.isNotEmpty(meta.getLastModificationTimeFieldName())) {
+        data.lastModificationDateTime = new Date(data.file.getContent().getLastModifiedTime());
+      }
+      if (StringUtils.isNotEmpty(meta.getUriNameFieldName())) {
+        data.uriName = data.file.getName().getURI();
+      }
+      if (StringUtils.isNotEmpty(meta.getRootUriNameFieldName())) {
+        data.rootUriName = data.file.getName().getRootURI();
+      }
+      if (StringUtils.isNotEmpty(meta.getSizeFieldName())) {
+        data.size = data.file.getContent().getSize();
+      }
 
       if (meta.isAddResultFile()) {
         ResultFile resultFile =
@@ -207,7 +214,6 @@ public class ParquetInputEnhanced
                 PKG, "ExcelInput.Log.OpeningFile", "" + data.filenr + " : " + data.filename));
       }
 
-      Object[] row = getRow();
       FileObject fileObject = HopVfs.getFileObject(data.filename);
       data.inputStream = HopVfs.getInputStream(fileObject);
 
@@ -222,12 +228,63 @@ public class ParquetInputEnhanced
 
       RowMetaAndData r = data.reader.read();
       while (r != null && !isStopped()) {
-        // Add r to the input rows...
-        // (SR) TODO to be used in case there is an input flow... Later
-        // Object[] outputRow = RowDataUtil.addRowData(outputRow, r.size(), r.getData());
-//        Object[] outputRow = RowDataUtil.allocateRowData(r.size());
-//        outputRow = RowDataUtil.addRowData(outputRow, 0, r.getData());
-        putRow(data.outputRowMeta, r.getData());
+
+        Object[] row = r.getData();
+        int rowIndex = r.size();
+
+        // Do we need to include the filename?
+        if (StringUtils.isNotEmpty(meta.getFileField())) {
+          row[rowIndex] = data.filename;
+          rowIndex++;
+        }
+
+        // Do we need to include the rownumber?
+        //          if (StringUtils.isNotEmpty(meta.getRowNumberField())) {
+        //              row[rowIndex] = getLinesWritten() + 1;
+        //              rowIndex++;
+        //          }
+
+        // Possibly add short filename...
+        if (StringUtils.isNotEmpty(meta.getShortFileFieldName())) {
+          row[rowIndex] = data.shortFilename;
+          rowIndex++;
+        }
+        // Add Extension
+        if (StringUtils.isNotEmpty(meta.getExtensionFieldName())) {
+          row[rowIndex] = data.extension;
+          rowIndex++;
+        }
+        // add path
+        if (StringUtils.isNotEmpty(meta.getPathFieldName())) {
+          row[rowIndex] = data.path;
+          rowIndex++;
+        }
+        // Add Size
+        if (StringUtils.isNotEmpty(meta.getSizeFieldName())) {
+          row[rowIndex] = data.size;
+          rowIndex++;
+        }
+        // add Hidden
+        if (StringUtils.isNotEmpty(meta.getHiddenFieldName())) {
+          row[rowIndex] = data.hidden;
+          rowIndex++;
+        }
+        // Add modification date
+        if (StringUtils.isNotEmpty(meta.getLastModificationTimeFieldName())) {
+          row[rowIndex] = data.lastModificationDateTime;
+          rowIndex++;
+        }
+        // Add Uri
+        if (StringUtils.isNotEmpty(meta.getUriNameFieldName())) {
+          row[rowIndex] = data.uriName;
+          rowIndex++;
+        }
+        // Add RootUri
+        if (StringUtils.isNotEmpty(meta.getRootUriNameFieldName())) {
+          row[rowIndex] = data.rootUriName;
+        }
+
+        putRow(data.outputRowMeta, row);
         r = data.reader.read();
       }
       data.filenr++;

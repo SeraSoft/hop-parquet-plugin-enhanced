@@ -80,8 +80,8 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
   public static final Class<?> PKG = ParquetInputEnhancedMeta.class;
 
-  public static final String SYSTEM_COMBO_YES = "System.Combo.Yes";
-  public static final String SYSTEM_COMBO_NO = "System.Combo.No";
+  //  public static final String SYSTEM_COMBO_YES = "System.Combo.Yes";
+  //  public static final String SYSTEM_COMBO_NO = "System.Combo.No";
   public static final String SYSTEM_DIALOG_ERROR_TITLE = "System.Dialog.Error.Title";
 
   private static final String[] YES_NO_COMBO =
@@ -114,14 +114,25 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
   private Button wbShowFiles;
   private Button wAccFilenames;
 
-  private Label wlPassThruFields;
-  private Button wPassThruFields;
+  // private Label wlPassThruFields;
+  // private Button wPassThruFields;
 
   private Label wlAccField;
   private CCombo wAccField;
 
   private Label wlAccTransform;
   private CCombo wAccTransform;
+  private Text wInclFilenameField;
+  private Text wInclRowNumField;
+  private Text wShortFileFieldName;
+  private Text wPathFieldName;
+
+  private Text wIsHiddenName;
+  private Text wLastModificationTimeName;
+  private Text wUriName;
+  private Text wRootUriName;
+  private Text wExtensionFieldName;
+  private Text wSizeFieldName;
 
   private String returnValue;
 
@@ -191,6 +202,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     addFilesTab(wTabFolder, middle, margin);
     addContentTab(wTabFolder, middle, margin);
     addFieldsTab(wTabFolder, middle, margin);
+    addAdditionalFieldsTab(wTabFolder, middle, margin);
 
     FormData fdTabFolder = new FormData();
     fdTabFolder.left = new FormAttachment(0, 0);
@@ -383,6 +395,202 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     wContentTab.setControl(wContentSComp);
   }
 
+  private void addAdditionalFieldsTab(CTabFolder wTabFolder, int middle, int margin) {
+    //
+    // START OF ADDITIONAL FIELDS TAB /
+    //
+    CTabItem wAdditionalFieldsTab = new CTabItem(wTabFolder, SWT.NONE);
+    wAdditionalFieldsTab.setFont(GuiResource.getInstance().getFontDefault());
+    wAdditionalFieldsTab.setText(
+        BaseMessages.getString(PKG, "ParquetInputDialog.AdditionalFieldsTab.TabTitle"));
+
+    Composite wAdditionalFieldsComp = new Composite(wTabFolder, SWT.NONE);
+    PropsUi.setLook(wAdditionalFieldsComp);
+
+    FormLayout fieldsLayout = new FormLayout();
+    fieldsLayout.marginWidth = 3;
+    fieldsLayout.marginHeight = 3;
+    wAdditionalFieldsComp.setLayout(fieldsLayout);
+
+    Label wlInclFilenameField = new Label(wAdditionalFieldsComp, SWT.RIGHT);
+    wlInclFilenameField.setText(
+        BaseMessages.getString(PKG, "ParquetInputDialog.InclFilenameField.Label"));
+    PropsUi.setLook(wlInclFilenameField);
+    FormData fdlInclFilenameField = new FormData();
+    fdlInclFilenameField.left = new FormAttachment(0, 0);
+    fdlInclFilenameField.top = new FormAttachment(wTransformName, margin);
+    fdlInclFilenameField.right = new FormAttachment(middle, -margin);
+    wlInclFilenameField.setLayoutData(fdlInclFilenameField);
+    wInclFilenameField = new Text(wAdditionalFieldsComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wInclFilenameField);
+    FormData fdInclFilenameField = new FormData();
+    fdInclFilenameField.left = new FormAttachment(middle, 0);
+    fdInclFilenameField.top = new FormAttachment(wTransformName, margin);
+    fdInclFilenameField.right = new FormAttachment(100, 0);
+    wInclFilenameField.setLayoutData(fdInclFilenameField);
+
+    // ShortFileFieldName line
+    Label wlShortFileFieldName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
+    wlShortFileFieldName.setText(
+        BaseMessages.getString(PKG, "ParquetInputDialog.ShortFileFieldName.Label"));
+    PropsUi.setLook(wlShortFileFieldName);
+    FormData fdlShortFileFieldName = new FormData();
+    fdlShortFileFieldName.left = new FormAttachment(0, 0);
+    fdlShortFileFieldName.top = new FormAttachment(wInclRowNumField, margin);
+    fdlShortFileFieldName.right = new FormAttachment(middle, -margin);
+    wlShortFileFieldName.setLayoutData(fdlShortFileFieldName);
+
+    wShortFileFieldName = new Text(wAdditionalFieldsComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wShortFileFieldName);
+    FormData fdShortFileFieldName = new FormData();
+    fdShortFileFieldName.left = new FormAttachment(middle, 0);
+    fdShortFileFieldName.right = new FormAttachment(100, -margin);
+    fdShortFileFieldName.top = new FormAttachment(wInclRowNumField, margin);
+    wShortFileFieldName.setLayoutData(fdShortFileFieldName);
+
+    // ExtensionFieldName line
+    Label wlExtensionFieldName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
+    wlExtensionFieldName.setText(
+        BaseMessages.getString(PKG, "ParquetInputDialog.ExtensionFieldName.Label"));
+    PropsUi.setLook(wlExtensionFieldName);
+    FormData fdlExtensionFieldName = new FormData();
+    fdlExtensionFieldName.left = new FormAttachment(0, 0);
+    fdlExtensionFieldName.top = new FormAttachment(wShortFileFieldName, margin);
+    fdlExtensionFieldName.right = new FormAttachment(middle, -margin);
+    wlExtensionFieldName.setLayoutData(fdlExtensionFieldName);
+
+    wExtensionFieldName = new Text(wAdditionalFieldsComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wExtensionFieldName);
+    FormData fdExtensionFieldName = new FormData();
+    fdExtensionFieldName.left = new FormAttachment(middle, 0);
+    fdExtensionFieldName.right = new FormAttachment(100, -margin);
+    fdExtensionFieldName.top = new FormAttachment(wShortFileFieldName, margin);
+    wExtensionFieldName.setLayoutData(fdExtensionFieldName);
+
+    // PathFieldName line
+    Label wlPathFieldName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
+    wlPathFieldName.setText(BaseMessages.getString(PKG, "ParquetInputDialog.PathFieldName.Label"));
+    PropsUi.setLook(wlPathFieldName);
+    FormData fdlPathFieldName = new FormData();
+    fdlPathFieldName.left = new FormAttachment(0, 0);
+    fdlPathFieldName.top = new FormAttachment(wExtensionFieldName, margin);
+    fdlPathFieldName.right = new FormAttachment(middle, -margin);
+    wlPathFieldName.setLayoutData(fdlPathFieldName);
+
+    wPathFieldName = new Text(wAdditionalFieldsComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wPathFieldName);
+    FormData fdPathFieldName = new FormData();
+    fdPathFieldName.left = new FormAttachment(middle, 0);
+    fdPathFieldName.right = new FormAttachment(100, -margin);
+    fdPathFieldName.top = new FormAttachment(wExtensionFieldName, margin);
+    wPathFieldName.setLayoutData(fdPathFieldName);
+
+    // SizeFieldName line
+    Label wlSizeFieldName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
+    wlSizeFieldName.setText(BaseMessages.getString(PKG, "ParquetInputDialog.SizeFieldName.Label"));
+    PropsUi.setLook(wlSizeFieldName);
+    FormData fdlSizeFieldName = new FormData();
+    fdlSizeFieldName.left = new FormAttachment(0, 0);
+    fdlSizeFieldName.top = new FormAttachment(wPathFieldName, margin);
+    fdlSizeFieldName.right = new FormAttachment(middle, -margin);
+    wlSizeFieldName.setLayoutData(fdlSizeFieldName);
+
+    wSizeFieldName = new Text(wAdditionalFieldsComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wSizeFieldName);
+    FormData fdSizeFieldName = new FormData();
+    fdSizeFieldName.left = new FormAttachment(middle, 0);
+    fdSizeFieldName.right = new FormAttachment(100, -margin);
+    fdSizeFieldName.top = new FormAttachment(wPathFieldName, margin);
+    wSizeFieldName.setLayoutData(fdSizeFieldName);
+
+    // IsHiddenName line
+    Label wlIsHiddenName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
+    wlIsHiddenName.setText(BaseMessages.getString(PKG, "ParquetInputDialog.IsHiddenName.Label"));
+    PropsUi.setLook(wlIsHiddenName);
+    FormData fdlIsHiddenName = new FormData();
+    fdlIsHiddenName.left = new FormAttachment(0, 0);
+    fdlIsHiddenName.top = new FormAttachment(wSizeFieldName, margin);
+    fdlIsHiddenName.right = new FormAttachment(middle, -margin);
+    wlIsHiddenName.setLayoutData(fdlIsHiddenName);
+
+    wIsHiddenName = new Text(wAdditionalFieldsComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wIsHiddenName);
+    FormData fdIsHiddenName = new FormData();
+    fdIsHiddenName.left = new FormAttachment(middle, 0);
+    fdIsHiddenName.right = new FormAttachment(100, -margin);
+    fdIsHiddenName.top = new FormAttachment(wSizeFieldName, margin);
+    wIsHiddenName.setLayoutData(fdIsHiddenName);
+
+    // LastModificationTimeName line
+    Label wlLastModificationTimeName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
+    wlLastModificationTimeName.setText(
+        BaseMessages.getString(PKG, "ParquetInputDialog.LastModificationTimeName.Label"));
+    PropsUi.setLook(wlLastModificationTimeName);
+    FormData fdlLastModificationTimeName = new FormData();
+    fdlLastModificationTimeName.left = new FormAttachment(0, 0);
+    fdlLastModificationTimeName.top = new FormAttachment(wIsHiddenName, margin);
+    fdlLastModificationTimeName.right = new FormAttachment(middle, -margin);
+    wlLastModificationTimeName.setLayoutData(fdlLastModificationTimeName);
+
+    wLastModificationTimeName = new Text(wAdditionalFieldsComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wLastModificationTimeName);
+    FormData fdLastModificationTimeName = new FormData();
+    fdLastModificationTimeName.left = new FormAttachment(middle, 0);
+    fdLastModificationTimeName.right = new FormAttachment(100, -margin);
+    fdLastModificationTimeName.top = new FormAttachment(wIsHiddenName, margin);
+    wLastModificationTimeName.setLayoutData(fdLastModificationTimeName);
+
+    // UriName line
+    Label wlUriName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
+    wlUriName.setText(BaseMessages.getString(PKG, "ParquetInputDialog.UriName.Label"));
+    PropsUi.setLook(wlUriName);
+    FormData fdlUriName = new FormData();
+    fdlUriName.left = new FormAttachment(0, 0);
+    fdlUriName.top = new FormAttachment(wLastModificationTimeName, margin);
+    fdlUriName.right = new FormAttachment(middle, -margin);
+    wlUriName.setLayoutData(fdlUriName);
+
+    wUriName = new Text(wAdditionalFieldsComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wUriName);
+    FormData fdUriName = new FormData();
+    fdUriName.left = new FormAttachment(middle, 0);
+    fdUriName.right = new FormAttachment(100, -margin);
+    fdUriName.top = new FormAttachment(wLastModificationTimeName, margin);
+    wUriName.setLayoutData(fdUriName);
+
+    // RootUriName line
+    Label wlRootUriName = new Label(wAdditionalFieldsComp, SWT.RIGHT);
+    wlRootUriName.setText(BaseMessages.getString(PKG, "ParquetInputDialog.RootUriName.Label"));
+    PropsUi.setLook(wlRootUriName);
+    FormData fdlRootUriName = new FormData();
+    fdlRootUriName.left = new FormAttachment(0, 0);
+    fdlRootUriName.top = new FormAttachment(wUriName, margin);
+    fdlRootUriName.right = new FormAttachment(middle, -margin);
+    wlRootUriName.setLayoutData(fdlRootUriName);
+
+    wRootUriName = new Text(wAdditionalFieldsComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wRootUriName);
+    FormData fdRootUriName = new FormData();
+    fdRootUriName.left = new FormAttachment(middle, 0);
+    fdRootUriName.right = new FormAttachment(100, -margin);
+    fdRootUriName.top = new FormAttachment(wUriName, margin);
+    wRootUriName.setLayoutData(fdRootUriName);
+
+    FormData fdAdditionalFieldsComp = new FormData();
+    fdAdditionalFieldsComp.left = new FormAttachment(0, 0);
+    fdAdditionalFieldsComp.top = new FormAttachment(wTransformName, margin);
+    fdAdditionalFieldsComp.right = new FormAttachment(100, 0);
+    fdAdditionalFieldsComp.bottom = new FormAttachment(100, 0);
+    wAdditionalFieldsComp.setLayoutData(fdAdditionalFieldsComp);
+
+    wAdditionalFieldsComp.layout();
+    wAdditionalFieldsTab.setControl(wAdditionalFieldsComp);
+
+    //
+    // / END OF ADDITIONAL FIELDS TAB
+    //
+  }
+
   private void addFilesTab(CTabFolder wTabFolder, int middle, int margin) {
     // ////////////////////////
     // START OF FILE TAB ///
@@ -553,31 +761,31 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
     // Accept filenames from previous transforms?
     //
-    wlPassThruFields = new Label(gAccepting, SWT.RIGHT);
-    wlPassThruFields.setText(
-        BaseMessages.getString(PKG, "ParquetInputDialog.PassThruFields.Label"));
-    PropsUi.setLook(wlPassThruFields);
-    FormData fdlPassThruFields = new FormData();
-    fdlPassThruFields.top = new FormAttachment(wAccFilenames, margin);
-    fdlPassThruFields.left = new FormAttachment(0, 0);
-    fdlPassThruFields.right = new FormAttachment(middle, -margin);
-    wlPassThruFields.setLayoutData(fdlPassThruFields);
-    wPassThruFields = new Button(gAccepting, SWT.CHECK);
-    wPassThruFields.setToolTipText(
-        BaseMessages.getString(PKG, "ParquetInputDialog.PassThruFields.Tooltip"));
-    PropsUi.setLook(wPassThruFields);
-    FormData fdPassThruFields = new FormData();
-    fdPassThruFields.top = new FormAttachment(wlPassThruFields, 0, SWT.CENTER);
-    fdPassThruFields.left = new FormAttachment(middle, 0);
-    fdPassThruFields.right = new FormAttachment(100, 0);
-    wPassThruFields.setLayoutData(fdPassThruFields);
+    //    wlPassThruFields = new Label(gAccepting, SWT.RIGHT);
+    //    wlPassThruFields.setText(
+    //        BaseMessages.getString(PKG, "ParquetInputDialog.PassThruFields.Label"));
+    //    PropsUi.setLook(wlPassThruFields);
+    //    FormData fdlPassThruFields = new FormData();
+    //    fdlPassThruFields.top = new FormAttachment(wAccFilenames, margin);
+    //    fdlPassThruFields.left = new FormAttachment(0, 0);
+    //    fdlPassThruFields.right = new FormAttachment(middle, -margin);
+    //    wlPassThruFields.setLayoutData(fdlPassThruFields);
+    //    wPassThruFields = new Button(gAccepting, SWT.CHECK);
+    //    wPassThruFields.setToolTipText(
+    //        BaseMessages.getString(PKG, "ParquetInputDialog.PassThruFields.Tooltip"));
+    //    PropsUi.setLook(wPassThruFields);
+    //    FormData fdPassThruFields = new FormData();
+    //    fdPassThruFields.top = new FormAttachment(wlPassThruFields, 0, SWT.CENTER);
+    //    fdPassThruFields.left = new FormAttachment(middle, 0);
+    //    fdPassThruFields.right = new FormAttachment(100, 0);
+    //    wPassThruFields.setLayoutData(fdPassThruFields);
 
     // Which transform to read from?
     wlAccTransform = new Label(gAccepting, SWT.RIGHT);
     wlAccTransform.setText(BaseMessages.getString(PKG, "ParquetInputDialog.AcceptTransform.Label"));
     PropsUi.setLook(wlAccTransform);
     FormData fdlAccTransform = new FormData();
-    fdlAccTransform.top = new FormAttachment(wPassThruFields, margin);
+    fdlAccTransform.top = new FormAttachment(wAccFilenames, margin);
     fdlAccTransform.left = new FormAttachment(0, 0);
     fdlAccTransform.right = new FormAttachment(middle, -margin);
     wlAccTransform.setLayoutData(fdlAccTransform);
@@ -586,7 +794,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
         BaseMessages.getString(PKG, "ParquetInputDialog.AcceptTransform.Tooltip"));
     PropsUi.setLook(wAccTransform);
     FormData fdAccTransform = new FormData();
-    fdAccTransform.top = new FormAttachment(wPassThruFields, margin);
+    fdAccTransform.top = new FormAttachment(wAccFilenames, margin);
     fdAccTransform.left = new FormAttachment(middle, 0);
     fdAccTransform.right = new FormAttachment(100, 0);
     wAccTransform.setLayoutData(fdAccTransform);
@@ -616,7 +824,8 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     } catch (HopTransformException e) {
       new ErrorDialog(
           shell,
-          BaseMessages.getString(PKG, "ParquetInputDialog.ErrorDialog.UnableToGetInputFields.Title"),
+          BaseMessages.getString(
+              PKG, "ParquetInputDialog.ErrorDialog.UnableToGetInputFields.Title"),
           BaseMessages.getString(
               PKG, "ParquetInputDialog.ErrorDialog.UnableToGetInputFields.Message"),
           e);
@@ -808,11 +1017,11 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
   public void setFlags() {
 
     boolean accept = wAccFilenames.getSelection();
-    wlPassThruFields.setEnabled(accept);
-    wPassThruFields.setEnabled(accept);
-    if (!wAccFilenames.getSelection()) {
-      wPassThruFields.setSelection(false);
-    }
+    //    wlPassThruFields.setEnabled(accept);
+    //    wPassThruFields.setEnabled(accept);
+    //    if (!wAccFilenames.getSelection()) {
+    //      wPassThruFields.setSelection(false);
+    //    }
     wlAccField.setEnabled(accept);
     wAccField.setEnabled(accept);
     wlAccTransform.setEnabled(accept);
@@ -949,7 +1158,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
     wTransformName.setText(Const.NVL(transformName, ""));
     wAccFilenames.setSelection(meta.isAcceptingFilenames());
-    wPassThruFields.setSelection(meta.isPassingThruFields());
+    // wPassThruFields.setSelection(meta.isPassingThruFields());
     if (meta.getAcceptingField() != null) {
       wAccField.setText(meta.getAcceptingField());
     }
@@ -989,6 +1198,16 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
       item.setText(6, String.valueOf(field.getTargetPrecision()));
     }
 
+    wInclFilenameField.setText(Const.NVL(meta.getFileField(), ""));
+    wShortFileFieldName.setText(Const.NVL(meta.getShortFileFieldName(), ""));
+    wPathFieldName.setText(Const.NVL(meta.getPathFieldName(), ""));
+    wIsHiddenName.setText(Const.NVL(meta.getHiddenFieldName(), ""));
+    wLastModificationTimeName.setText(Const.NVL(meta.getLastModificationTimeFieldName(), ""));
+    wUriName.setText(Const.NVL(meta.getUriNameFieldName(), ""));
+    wRootUriName.setText(Const.NVL(meta.getRootUriNameFieldName(), ""));
+    wExtensionFieldName.setText(Const.NVL(meta.getExtensionFieldName(), ""));
+    wSizeFieldName.setText(Const.NVL(meta.getSizeFieldName(), ""));
+
     wFields.removeEmptyRows();
     wFields.setRowNums();
     wFields.optWidth(true);
@@ -1010,7 +1229,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
     // copy info to TextFileInputMeta class (input)
     meta.setAcceptingFilenames(wAccFilenames.getSelection());
-    meta.setPassingThruFields(wPassThruFields.getSelection());
+    //    meta.setPassingThruFields(wPassThruFields.getSelection());
     meta.setAcceptingField(wAccField.getText());
     meta.setAcceptingTransformName(wAccTransform.getText());
     meta.setAcceptingTransform(pipelineMeta.findTransform(wAccTransform.getText()));
@@ -1051,6 +1270,16 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
       meta.getFileItems().add(fileItem);
     }
+
+    meta.setFileField(wInclFilenameField.getText());
+    meta.setShortFileFieldName(wShortFileFieldName.getText());
+    meta.setPathFieldName(wPathFieldName.getText());
+    meta.setHiddenFieldName(wIsHiddenName.getText());
+    meta.setLastModificationTimeFieldName(wLastModificationTimeName.getText());
+    meta.setUriNameFieldName(wUriName.getText());
+    meta.setRootUriNameFieldName(wRootUriName.getText());
+    meta.setExtensionFieldName(wExtensionFieldName.getText());
+    meta.setSizeFieldName(wSizeFieldName.getText());
   }
 
   private void cancel() {
