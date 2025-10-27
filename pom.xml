@@ -23,12 +23,13 @@
         <org.eclipse.platform.version>3.119.0</org.eclipse.platform.version>
         <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
-        <parquet.version>1.13.1</parquet.version>
-        <hadoop.version>3.3.6</hadoop.version>
+        <parquet.version>1.15.2</parquet.version>
+        <hadoop.version>3.4.1</hadoop.version>
         <protobuf.version>3.23.2</protobuf.version>
         <woodstox.version>6.4.0</woodstox.version>
         <curator.version>5.4.0</curator.version>
         <zookeeper.version>3.8.0</zookeeper.version>
+        <lombok.version>1.18.34</lombok.version>
 
         <!-- Jandex For annotation Detection -->
         <jandex.version>3.1.6</jandex.version>
