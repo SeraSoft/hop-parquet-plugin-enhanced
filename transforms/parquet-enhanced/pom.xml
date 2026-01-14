@@ -6,6 +6,7 @@
         <groupId>org.apache.hop</groupId>
         <artifactId>hop</artifactId>
         <version>2.16.2</version>
+        <relativePath></relativePath>
     </parent>
     <artifactId>parquet-enhanced</artifactId>
     <name>Hop Parquet Enhanced Transform</name>
