@@ -19,7 +19,6 @@ package org.apache.hop.parquet.transforms.input;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.hop.core.Const;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.row.value.ValueMetaFactory;
@@ -60,7 +59,8 @@ public class ParquetFileInputField {
 
   public IValueMeta createValueMeta() throws HopException {
     int type = ValueMetaFactory.getIdForValueMeta(targetType);
-    IValueMeta valueMeta = ValueMetaFactory.createValueMeta(targetField, type, targetLength, targetPrecision);
+    IValueMeta valueMeta =
+        ValueMetaFactory.createValueMeta(targetField, type, targetLength, targetPrecision);
     valueMeta.setConversionMask(targetFormat);
     return valueMeta;
   }
