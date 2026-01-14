@@ -32,7 +32,8 @@ public class ParquetRowConverter extends GroupConverter {
   private IRowMeta rowMeta;
   private List<ParquetFileInputField> fields;
 
-  public ParquetRowConverter(MessageType messageType, IRowMeta rowMeta, List<ParquetFileInputField> fields) {
+  public ParquetRowConverter(
+      MessageType messageType, IRowMeta rowMeta, List<ParquetFileInputField> fields) {
     this.messageType = messageType;
     this.group = new RowMetaAndData(rowMeta, null);
     this.rowMeta = rowMeta;

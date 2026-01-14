@@ -19,8 +19,6 @@ package org.apache.hop.parquet.transforms.input;
 
 import java.io.InputStream;
 import java.util.Date;
-import java.util.List;
-
 import org.apache.commons.vfs2.FileObject;
 import org.apache.hop.core.IRowSet;
 import org.apache.hop.core.RowMetaAndData;
@@ -56,6 +54,7 @@ public class ParquetInputEnhancedData extends BaseTransformData implements ITran
 
   /** Reference to current parquet file * */
   public ParquetReader<RowMetaAndData> reader;
+
   public InputStream inputStream;
 
   public ParquetInputEnhancedData() {

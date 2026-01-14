@@ -33,7 +33,8 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName;
     categoryDescription = "i18n:org.apache.hop.pipeline.transform:BaseTransform.Category.Output",
     documentationUrl = "/pipeline/transforms/parquet-file-output.html",
     keywords = "i18n::ParquetOutputMeta.keyword")
-public class ParquetOutputEnhancedMeta extends BaseTransformMeta<ParquetOutputEnhanced, ParquetOutputEnhancedData> {
+public class ParquetOutputEnhancedMeta
+    extends BaseTransformMeta<ParquetOutputEnhanced, ParquetOutputEnhancedData> {
 
   @HopMetadataProperty(key = "filename_base")
   private String filenameBase;

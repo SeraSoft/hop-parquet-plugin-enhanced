@@ -368,12 +368,13 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdAddFileResult.left = new FormAttachment(middle, 0);
     fdAddFileResult.top = new FormAttachment(wlAddFileResult, 0, SWT.CENTER);
     wAddFileResult.setLayoutData(fdAddFileResult);
-    wAddFileResult.addSelectionListener(new SelectionAdapter() {
-        @Override
-        public void widgetSelected(SelectionEvent e) {
+    wAddFileResult.addSelectionListener(
+        new SelectionAdapter() {
+          @Override
+          public void widgetSelected(SelectionEvent e) {
             input.setChanged();
-        }
-    });
+          }
+        });
 
     FormData fdgAddFileResult = new FormData();
     fdgAddFileResult.left = new FormAttachment(0, margin);
@@ -401,7 +402,8 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     wContentTab.setControl(wContentSComp);
   }
 
-  private void addAdditionalFieldsTab(CTabFolder wTabFolder, int middle, int margin, ModifyListener lsMod) {
+  private void addAdditionalFieldsTab(
+      CTabFolder wTabFolder, int middle, int margin, ModifyListener lsMod) {
     //
     // START OF ADDITIONAL FIELDS TAB /
     //
@@ -773,12 +775,13 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdAccFilenames.left = new FormAttachment(middle, 0);
     fdAccFilenames.right = new FormAttachment(100, 0);
     wAccFilenames.setLayoutData(fdAccFilenames);
-    wAccFilenames.addSelectionListener(new SelectionAdapter() {
-        @Override
-        public void widgetSelected(SelectionEvent e) {
+    wAccFilenames.addSelectionListener(
+        new SelectionAdapter() {
+          @Override
+          public void widgetSelected(SelectionEvent e) {
             input.setChanged();
-        }
-    });
+          }
+        });
 
     // Accept filenames from previous transforms?
     //
@@ -912,7 +915,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
             SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER,
             colinfo,
             0,
-                this.lsMod,
+            this.lsMod,
             props);
     PropsUi.setLook(wFilenameList);
     FormData fdFilenameList = new FormData();

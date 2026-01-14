@@ -44,7 +44,8 @@ import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.schema.MessageType;
 
-public class ParquetOutputEnhanced extends BaseTransform<ParquetOutputEnhancedMeta, ParquetOutputEnhancedData> {
+public class ParquetOutputEnhanced
+    extends BaseTransform<ParquetOutputEnhancedMeta, ParquetOutputEnhancedData> {
 
   public ParquetOutputEnhanced(
       TransformMeta transformMeta,

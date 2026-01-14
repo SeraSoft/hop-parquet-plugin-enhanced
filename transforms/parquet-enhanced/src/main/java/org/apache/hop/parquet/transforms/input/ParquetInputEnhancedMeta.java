@@ -95,71 +95,68 @@ public class ParquetInputEnhancedMeta
   @Setter
   private List<ParquetFileInputField> fields;
 
+  /** The fieldname that holds the name of the file */
+  @HopMetadataProperty(key = "filefield", injectionKeyDescription = "Extra output: file field name")
+  @Getter
+  @Setter
+  private String fileField;
 
-    /** The fieldname that holds the name of the file */
-    @HopMetadataProperty(key = "filefield",
-            injectionKeyDescription = "Extra output: file field name")
-    @Getter
-    @Setter
-    private String fileField;
+  /** Additional fields */
+  @HopMetadataProperty(
+      key = "shortFileFieldName",
+      injectionKeyDescription = "Extra output: short file field name")
+  @Getter
+  @Setter
+  private String shortFileFieldName;
 
+  @HopMetadataProperty(
+      key = "pathFieldName",
+      injectionKeyDescription = "Extra output: path field name")
+  @Getter
+  @Setter
+  private String pathFieldName;
 
-    /** Additional fields */
-    @HopMetadataProperty(
-            key = "shortFileFieldName",
-            injectionKeyDescription = "Extra output: short file field name")
-    @Getter
-    @Setter
-    private String shortFileFieldName;
+  @HopMetadataProperty(
+      key = "hiddenFieldName",
+      injectionKeyDescription = "Extra output: hidden flag field name")
+  @Getter
+  @Setter
+  private String hiddenFieldName;
 
-    @HopMetadataProperty(
-            key = "pathFieldName",
-            injectionKeyDescription = "Extra output: path field name")
-    @Getter
-    @Setter
-    private String pathFieldName;
+  @HopMetadataProperty(
+      key = "lastModificationTimeFieldName",
+      injectionKeyDescription = "Extra output: last modification time field name")
+  @Getter
+  @Setter
+  private String lastModificationTimeFieldName;
 
-    @HopMetadataProperty(
-            key = "hiddenFieldName",
-            injectionKeyDescription = "Extra output: hidden flag field name")
-    @Getter
-    @Setter
-    private String hiddenFieldName;
+  @HopMetadataProperty(
+      key = "uriNameFieldName",
+      injectionKeyDescription = "Extra output: URI field name")
+  @Getter
+  @Setter
+  private String uriNameFieldName;
 
-    @HopMetadataProperty(
-            key = "lastModificationTimeFieldName",
-            injectionKeyDescription = "Extra output: last modification time field name")
-    @Getter
-    @Setter
-    private String lastModificationTimeFieldName;
+  @HopMetadataProperty(
+      key = "rootUriNameFieldName",
+      injectionKeyDescription = "Extra output: root URI field name")
+  @Getter
+  @Setter
+  private String rootUriNameFieldName;
 
-    @HopMetadataProperty(
-            key = "uriNameFieldName",
-            injectionKeyDescription = "Extra output: URI field name")
-    @Getter
-    @Setter
-    private String uriNameFieldName;
+  @HopMetadataProperty(
+      key = "extensionFieldName",
+      injectionKeyDescription = "Extra output: extension field name")
+  @Getter
+  @Setter
+  private String extensionFieldName;
 
-    @HopMetadataProperty(
-            key = "rootUriNameFieldName",
-            injectionKeyDescription = "Extra output: root URI field name")
-    @Getter
-    @Setter
-    private String rootUriNameFieldName;
-
-    @HopMetadataProperty(
-            key = "extensionFieldName",
-            injectionKeyDescription = "Extra output: extension field name")
-    @Getter
-    @Setter
-    private String extensionFieldName;
-
-    @HopMetadataProperty(
-            key = "sizeFieldName",
-            injectionKeyDescription = "Extra output: file size field name")
-    @Getter
-    @Setter
-    private String sizeFieldName;
+  @HopMetadataProperty(
+      key = "sizeFieldName",
+      injectionKeyDescription = "Extra output: file size field name")
+  @Getter
+  @Setter
+  private String sizeFieldName;
 
   public ParquetInputEnhancedMeta() {
     fields = new ArrayList<>();
@@ -188,65 +185,64 @@ public class ParquetInputEnhancedMeta
       }
     }
 
-      if (!Utils.isEmpty(fileField)) {
-          IValueMeta v = new ValueMetaString(fileField);
-          v.setLength(250);
-          v.setPrecision(-1);
-          v.setOrigin(name);
-          inputRowMeta.addValueMeta(v);
-      }
+    if (!Utils.isEmpty(fileField)) {
+      IValueMeta v = new ValueMetaString(fileField);
+      v.setLength(250);
+      v.setPrecision(-1);
+      v.setOrigin(name);
+      inputRowMeta.addValueMeta(v);
+    }
 
-      // Add additional fields
-      //
-      if (StringUtils.isNotEmpty(getShortFileFieldName())) {
-          IValueMeta v = new ValueMetaString(variables.resolve(getShortFileFieldName()));
-          v.setLength(100, -1);
-          v.setOrigin(name);
-          inputRowMeta.addValueMeta(v);
-      }
-      if (StringUtils.isNotEmpty(getExtensionFieldName())) {
-          IValueMeta v = new ValueMetaString(variables.resolve(getExtensionFieldName()));
-          v.setLength(100, -1);
-          v.setOrigin(name);
-          inputRowMeta.addValueMeta(v);
-      }
-      if (StringUtils.isNotEmpty(getPathFieldName())) {
-          IValueMeta v = new ValueMetaString(variables.resolve(getPathFieldName()));
-          v.setLength(100, -1);
-          v.setOrigin(name);
-          inputRowMeta.addValueMeta(v);
-      }
-      if (StringUtils.isNotEmpty(getSizeFieldName())) {
-          IValueMeta v = new ValueMetaInteger(variables.resolve(getSizeFieldName()));
-          v.setOrigin(name);
-          v.setLength(9);
-          inputRowMeta.addValueMeta(v);
-      }
-      if (StringUtils.isNotEmpty(getHiddenFieldName())) {
-          IValueMeta v = new ValueMetaBoolean(variables.resolve(getHiddenFieldName()));
-          v.setOrigin(name);
-          inputRowMeta.addValueMeta(v);
-      }
+    // Add additional fields
+    //
+    if (StringUtils.isNotEmpty(getShortFileFieldName())) {
+      IValueMeta v = new ValueMetaString(variables.resolve(getShortFileFieldName()));
+      v.setLength(100, -1);
+      v.setOrigin(name);
+      inputRowMeta.addValueMeta(v);
+    }
+    if (StringUtils.isNotEmpty(getExtensionFieldName())) {
+      IValueMeta v = new ValueMetaString(variables.resolve(getExtensionFieldName()));
+      v.setLength(100, -1);
+      v.setOrigin(name);
+      inputRowMeta.addValueMeta(v);
+    }
+    if (StringUtils.isNotEmpty(getPathFieldName())) {
+      IValueMeta v = new ValueMetaString(variables.resolve(getPathFieldName()));
+      v.setLength(100, -1);
+      v.setOrigin(name);
+      inputRowMeta.addValueMeta(v);
+    }
+    if (StringUtils.isNotEmpty(getSizeFieldName())) {
+      IValueMeta v = new ValueMetaInteger(variables.resolve(getSizeFieldName()));
+      v.setOrigin(name);
+      v.setLength(9);
+      inputRowMeta.addValueMeta(v);
+    }
+    if (StringUtils.isNotEmpty(getHiddenFieldName())) {
+      IValueMeta v = new ValueMetaBoolean(variables.resolve(getHiddenFieldName()));
+      v.setOrigin(name);
+      inputRowMeta.addValueMeta(v);
+    }
 
-      if (StringUtils.isNotEmpty(getLastModificationTimeFieldName())) {
-          IValueMeta v = new ValueMetaDate(variables.resolve(getLastModificationTimeFieldName()));
-          v.setOrigin(name);
-          inputRowMeta.addValueMeta(v);
-      }
-      if (StringUtils.isNotEmpty(getUriNameFieldName())) {
-          IValueMeta v = new ValueMetaString(variables.resolve(getUriNameFieldName()));
-          v.setLength(100, -1);
-          v.setOrigin(name);
-          inputRowMeta.addValueMeta(v);
-      }
+    if (StringUtils.isNotEmpty(getLastModificationTimeFieldName())) {
+      IValueMeta v = new ValueMetaDate(variables.resolve(getLastModificationTimeFieldName()));
+      v.setOrigin(name);
+      inputRowMeta.addValueMeta(v);
+    }
+    if (StringUtils.isNotEmpty(getUriNameFieldName())) {
+      IValueMeta v = new ValueMetaString(variables.resolve(getUriNameFieldName()));
+      v.setLength(100, -1);
+      v.setOrigin(name);
+      inputRowMeta.addValueMeta(v);
+    }
 
-      if (StringUtils.isNotEmpty(getRootUriNameFieldName())) {
-          IValueMeta v = new ValueMetaString(variables.resolve(getRootUriNameFieldName()));
-          v.setLength(100, -1);
-          v.setOrigin(name);
-          inputRowMeta.addValueMeta(v);
-      }
-
+    if (StringUtils.isNotEmpty(getRootUriNameFieldName())) {
+      IValueMeta v = new ValueMetaString(variables.resolve(getRootUriNameFieldName()));
+      v.setLength(100, -1);
+      v.setOrigin(name);
+      inputRowMeta.addValueMeta(v);
+    }
   }
 
   /**
