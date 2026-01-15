@@ -20,6 +20,7 @@ package org.apache.hop.parquet.transforms.input;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hop.core.RowMetaAndData;
 import org.apache.parquet.hadoop.api.InitContext;
@@ -29,13 +30,13 @@ import org.apache.parquet.schema.MessageType;
 
 public class ParquetReadSupport extends ReadSupport<RowMetaAndData> {
 
-  private List<ParquetFileInputField> fields;
+  private List<ParquetField> fields;
 
-  public ParquetReadSupport(List<ParquetFileInputField> fields) {
+  public ParquetReadSupport(List<ParquetField> fields) {
     this.fields = fields;
   }
 
-  private MessageType messageType;
+  @Getter private MessageType messageType;
 
   @Override
   public ReadContext init(InitContext context) {
@@ -50,14 +51,5 @@ public class ParquetReadSupport extends ReadSupport<RowMetaAndData> {
       MessageType messageType,
       ReadContext readContext) {
     return new ParquetRecordMaterializer(messageType, fields);
-  }
-
-  /**
-   * Gets messageType
-   *
-   * @return value of messageType
-   */
-  public MessageType getMessageType() {
-    return messageType;
   }
 }

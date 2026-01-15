@@ -19,6 +19,7 @@ package org.apache.hop.parquet.transforms.input;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,8 @@ import org.apache.hop.core.RowMetaAndData;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.exception.HopFileException;
 import org.apache.hop.core.fileinput.FileInputList;
+import org.apache.hop.core.row.IRowMeta;
+import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.row.RowMeta;
 import org.apache.hop.core.vfs.HopVfs;
 import org.apache.hop.i18n.BaseMessages;
@@ -80,9 +83,6 @@ public class ParquetInputEnhanced
     if (first) {
       first = false;
 
-      data.outputRowMeta = new RowMeta(); // start from scratch!
-      meta.getFields(data.outputRowMeta, getTransformName(), null, null, this, metadataProvider);
-
       if (meta.isAcceptingFilenames()) {
         // Read the files from the specified input stream...
         data.files.getFiles().clear();
@@ -121,6 +121,9 @@ public class ParquetInputEnhanced
         }
       }
 
+      data.outputRowMeta = new RowMeta(); // start from scratch!
+      meta.getFields(data.outputRowMeta, getTransformName(), null, null, this, metadataProvider);
+
       handleMissingFiles();
     }
 
@@ -135,32 +138,7 @@ public class ParquetInputEnhanced
       return false; // end of data or error.
     }
 
-    //      if (meta.getRowLimit() > 0 && getLinesInput() >= meta.getRowLimit()) {
-    //          // The close of the openFile is in dispose()
-    //          if (isDetailed()) {
-    //              logDetailed(
-    //                      BaseMessages.getString(PKG, "ExcelInput.Log.RowLimitReached", "" +
-    // meta.getRowLimit()));
-    //          }
-    //
-    //          setOutputDone(); // signal end to receiver(s)
-    //          return false; // end of data or error.
-    //      }
-
     getRowsFromParquetFile();
-
-    //    if (r != null) {
-    //      incrementLinesInput();
-    //
-    //      // Send out the good news: we found rows of data!
-    //      putRow(data.outputRowMeta, r);
-    //
-    //      return true;
-    //    } else {
-    //      // This row is ignored / eaten
-    //      // We continue though.
-    //      return true;
-    //    }
 
     return true;
   }
@@ -228,8 +206,27 @@ public class ParquetInputEnhanced
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) data.size);
       IOUtils.copy(data.inputStream, outputStream);
       ParquetStream inputFile = new ParquetStream(outputStream.toByteArray(), data.filename);
+      List<ParquetField> fields = new ArrayList<>(meta.getFields());
 
-      ParquetReadSupport readSupport = new ParquetReadSupport(meta.getFields());
+      // If we don't have any fields specified, we read them all.
+      //
+      if (fields.isEmpty()) {
+        //
+        IRowMeta parquetRowMeta = ParquetInputEnhancedMeta.extractRowMeta(this, data.filename);
+        for (int i = 0; i < parquetRowMeta.size(); i++) {
+          IValueMeta parquetValueMeta = parquetRowMeta.getValueMeta(i);
+          fields.add(
+              new ParquetField(
+                  parquetValueMeta.getName(),
+                  parquetValueMeta.getName(),
+                  parquetValueMeta.getTypeDesc(),
+                  parquetValueMeta.getFormatMask(),
+                  Integer.toString(parquetValueMeta.getLength()),
+                  Integer.toString(parquetValueMeta.getPrecision())));
+        }
+      }
+
+      ParquetReadSupport readSupport = new ParquetReadSupport(fields);
       data.reader = new ParquetReaderBuilder<>(readSupport, inputFile).build();
 
       RowMetaAndData r = data.reader.read();
