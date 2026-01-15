@@ -31,16 +31,16 @@ public class ParquetRecordMaterializer extends RecordMaterializer<RowMetaAndData
 
   private final ParquetRowConverter root;
   private final MessageType messageType;
-  private final List<ParquetFileInputField> fields;
+  private final List<ParquetField> fields;
   private final List<Integer> requestedFieldIndexes;
   private final IRowMeta schemaRowMeta;
 
-  public ParquetRecordMaterializer(MessageType messageType, List<ParquetFileInputField> fields) {
+  public ParquetRecordMaterializer(MessageType messageType, List<ParquetField> fields) {
     this.messageType = messageType;
     this.fields = fields;
     this.requestedFieldIndexes = new ArrayList<>();
     this.schemaRowMeta = new RowMeta();
-    for (ParquetFileInputField field : fields) {
+    for (ParquetField field : fields) {
       int fieldIndex = messageType.getFieldIndex(field.getSourceField());
       if (fieldIndex < 0) {
         throw new RuntimeException(

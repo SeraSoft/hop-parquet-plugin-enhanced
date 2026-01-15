@@ -17,29 +17,37 @@
 
 package org.apache.hop.parquet.transforms.input;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileObject;
+import org.apache.hop.core.RowMetaAndData;
 import org.apache.hop.core.annotations.Transform;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.exception.HopTransformException;
 import org.apache.hop.core.fileinput.FileInputList;
 import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.IValueMeta;
-import org.apache.hop.core.row.value.ValueMetaBoolean;
-import org.apache.hop.core.row.value.ValueMetaDate;
-import org.apache.hop.core.row.value.ValueMetaInteger;
-import org.apache.hop.core.row.value.ValueMetaString;
+import org.apache.hop.core.row.RowMeta;
+import org.apache.hop.core.row.value.*;
 import org.apache.hop.core.util.Utils;
 import org.apache.hop.core.variables.IVariables;
+import org.apache.hop.core.vfs.HopVfs;
 import org.apache.hop.i18n.BaseMessages;
 import org.apache.hop.metadata.api.HopMetadataProperty;
 import org.apache.hop.metadata.api.IHopMetadataProvider;
 import org.apache.hop.pipeline.transform.BaseTransformMeta;
 import org.apache.hop.pipeline.transform.TransformMeta;
+import org.apache.parquet.column.ColumnDescriptor;
+import org.apache.parquet.hadoop.ParquetReader;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.PrimitiveType;
 
 @Transform(
     id = "ParquetFileInputEnhanced",
@@ -93,13 +101,18 @@ public class ParquetInputEnhancedMeta
   @HopMetadataProperty(groupKey = "fields", key = "field")
   @Getter
   @Setter
-  private List<ParquetFileInputField> fields;
+  private List<ParquetField> fields;
 
   /** The fieldname that holds the name of the file */
   @HopMetadataProperty(key = "filefield", injectionKeyDescription = "Extra output: file field name")
   @Getter
   @Setter
   private String fileField;
+
+  @HopMetadataProperty(key = "metadata_filename")
+  @Getter
+  @Setter
+  private String metadataFilename;
 
   /** Additional fields */
   @HopMetadataProperty(
@@ -172,9 +185,22 @@ public class ParquetInputEnhancedMeta
       IVariables variables,
       IHopMetadataProvider metadataProvider)
       throws HopTransformException {
+
+    // If there is a filename from which to extra the field metadata, use this
+    //
+    if (fields.isEmpty() && StringUtils.isNotEmpty(metadataFilename)) {
+      String filename = variables.resolve(metadataFilename);
+      try {
+        inputRowMeta.addRowMeta(extractRowMeta(variables, filename));
+        return;
+      } catch (Exception e) {
+        throw new HopTransformException(e);
+      }
+    }
+
     // Add the fields to the input
     //
-    for (ParquetFileInputField field : fields) {
+    for (ParquetField field : fields) {
       try {
         IValueMeta valueMeta = field.createValueMeta();
         valueMeta.setOrigin(name);
@@ -245,28 +271,95 @@ public class ParquetInputEnhancedMeta
     }
   }
 
-  /**
-   * Gets filenameField
-   *
-   * @return value of filenameField
-   */
-  public String getFilenameField() {
-    return filenameField;
-  }
+  public static IRowMeta extractRowMeta(IVariables variables, String filename) throws HopException {
+    try {
+      FileObject fileObject = HopVfs.getFileObject(variables.resolve(filename), variables);
 
-  /**
-   * Gets fields
-   *
-   * @return value of fields
-   */
-  public List<ParquetFileInputField> getFields() {
-    return fields;
+      long size = fileObject.getContent().getSize();
+      InputStream inputStream = HopVfs.getInputStream(fileObject);
+
+      // Reads the whole file into memory...
+      //
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) size);
+      IOUtils.copy(inputStream, outputStream);
+      ParquetStream inputFile = new ParquetStream(outputStream.toByteArray(), filename);
+      // Empty list of fields to retrieve: we still grab the schema
+      //
+      ParquetReadSupport readSupport = new ParquetReadSupport(new ArrayList<>());
+      ParquetReader<RowMetaAndData> reader =
+          new ParquetReaderBuilder<>(readSupport, inputFile).build();
+
+      // Read one empty row...
+      //
+      reader.read();
+
+      // Now we have the schema...
+      //
+      MessageType schema = readSupport.getMessageType();
+      IRowMeta rowMeta = new RowMeta();
+      List<ColumnDescriptor> columns = schema.getColumns();
+      for (ColumnDescriptor column : columns) {
+        String sourceField = "";
+        String[] path = column.getPath();
+        if (path.length == 1) {
+          sourceField = path[0];
+        } else {
+          for (int i = 0; i < path.length; i++) {
+            if (i > 0) {
+              sourceField += ".";
+            }
+            sourceField += path[i];
+          }
+        }
+        PrimitiveType primitiveType = column.getPrimitiveType();
+        int hopType = IValueMeta.TYPE_STRING;
+        LogicalTypeAnnotation logicalType = primitiveType.getLogicalTypeAnnotation();
+        if (logicalType != null) {
+          if ((logicalType instanceof LogicalTypeAnnotation.TimestampLogicalTypeAnnotation)
+              || (logicalType instanceof LogicalTypeAnnotation.TimeLogicalTypeAnnotation)) {
+            hopType = IValueMeta.TYPE_TIMESTAMP;
+          } else if (logicalType instanceof LogicalTypeAnnotation.DateLogicalTypeAnnotation) {
+            hopType = IValueMeta.TYPE_DATE;
+          } else if (logicalType instanceof LogicalTypeAnnotation.JsonLogicalTypeAnnotation) {
+            hopType = IValueMeta.TYPE_JSON;
+          } else if (logicalType instanceof LogicalTypeAnnotation.DecimalLogicalTypeAnnotation) {
+            hopType = IValueMeta.TYPE_BIGNUMBER;
+          } else if (logicalType instanceof LogicalTypeAnnotation.IntLogicalTypeAnnotation) {
+            hopType = IValueMeta.TYPE_INTEGER;
+          }
+        } else {
+          switch (primitiveType.getPrimitiveTypeName()) {
+            case INT32, INT64:
+              hopType = IValueMeta.TYPE_INTEGER;
+              break;
+            case INT96:
+              hopType = IValueMeta.TYPE_BINARY;
+              break;
+            case FLOAT, DOUBLE:
+              hopType = IValueMeta.TYPE_NUMBER;
+              break;
+            case BOOLEAN:
+              hopType = IValueMeta.TYPE_BOOLEAN;
+              break;
+            case BINARY:
+              hopType = IValueMeta.TYPE_BINARY;
+              break;
+          }
+        }
+        IValueMeta valueMeta = ValueMetaFactory.createValueMeta(sourceField, hopType, -1, -1);
+        rowMeta.addValueMeta(valueMeta);
+      }
+      return rowMeta;
+    } catch (Exception e) {
+      throw new HopException(
+          "Unable to extract row metadata from parquet file '" + filename + "'", e);
+    }
   }
 
   /**
    * @param fields The fields to set
    */
-  public void setFields(List<ParquetFileInputField> fields) {
+  public void setFields(List<ParquetField> fields) {
     this.fields = fields;
   }
 

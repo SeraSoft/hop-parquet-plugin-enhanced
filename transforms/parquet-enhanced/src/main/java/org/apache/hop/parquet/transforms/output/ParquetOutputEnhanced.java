@@ -18,6 +18,7 @@
 package org.apache.hop.parquet.transforms.output;
 
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +33,9 @@ import org.apache.hop.core.Const;
 import org.apache.hop.core.ResultFile;
 import org.apache.hop.core.RowMetaAndData;
 import org.apache.hop.core.exception.HopException;
+import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.IValueMeta;
+import org.apache.hop.core.row.value.ValueMetaInteger;
 import org.apache.hop.core.vfs.HopVfs;
 import org.apache.hop.pipeline.Pipeline;
 import org.apache.hop.pipeline.PipelineMeta;
@@ -135,7 +138,40 @@ public class ParquetOutputEnhanced
     // Write the row, handled by class ParquetWriteSupport
     //
     try {
-      data.writers.get(data.currentFilename).write(new RowMetaAndData(getInputRowMeta(), row));
+      IRowMeta parquetRowMeta = getInputRowMeta().clone();
+
+      // convert date/timestamp => long
+      for (int i = 0; i < data.sourceFieldIndexes.size(); i++) {
+        int idx = data.sourceFieldIndexes.get(i);
+        IValueMeta valueMeta = parquetRowMeta.getValueMeta(idx);
+        if (valueMeta.getType() == IValueMeta.TYPE_TIMESTAMP) {
+          // Update of type meta
+          IValueMeta longMeta = new ValueMetaInteger(valueMeta.getName());
+          longMeta.setConversionMask(valueMeta.getConversionMask());
+          longMeta.setLength(valueMeta.getLength(), valueMeta.getPrecision());
+          parquetRowMeta.setValueMeta(idx, longMeta);
+        }
+      }
+
+      // Clone Rows and convert Date & Timestamps to Long
+      Object[] parquetRow = row.clone();
+      for (int i = 0; i < data.sourceFieldIndexes.size(); i++) {
+        int idx = data.sourceFieldIndexes.get(i);
+        Object value = parquetRow[idx];
+        if (getInputRowMeta().getValueMeta(idx).getType() == IValueMeta.TYPE_TIMESTAMP) {
+          if (value instanceof java.util.Date) {
+            parquetRow[idx] = ((java.util.Date) value).getTime();
+          } else if (value instanceof byte[]) {
+            String dateStr = new String((byte[]) value, StandardCharsets.UTF_8);
+            SimpleDateFormat sdf =
+                new SimpleDateFormat(parquetRowMeta.getValueMeta(idx).getFormatMask());
+            Date date = sdf.parse(dateStr);
+            parquetRow[idx] = date.getTime();
+          }
+        }
+      }
+
+      data.writers.get(data.currentFilename).write(new RowMetaAndData(parquetRowMeta, parquetRow));
       incrementLinesOutput();
 
       if (!meta.isFilenameInField()) data.splitRowCount++;

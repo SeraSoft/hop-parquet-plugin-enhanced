@@ -19,12 +19,13 @@ package org.apache.hop.parquet.transforms.input;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.hop.core.Const;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.row.IValueMeta;
 import org.apache.hop.core.row.value.ValueMetaFactory;
 import org.apache.hop.metadata.api.HopMetadataProperty;
 
-public class ParquetFileInputField {
+public class ParquetField {
   @HopMetadataProperty(key = "source_field")
   @Getter
   @Setter
@@ -48,19 +49,44 @@ public class ParquetFileInputField {
   @HopMetadataProperty(key = "target_length")
   @Getter
   @Setter
-  private int targetLength;
+  private String targetLength;
 
   @HopMetadataProperty(key = "target_precision")
   @Getter
   @Setter
-  private int targetPrecision;
+  private String targetPrecision;
 
-  public ParquetFileInputField() {}
+  public ParquetField() {}
+
+  public ParquetField(ParquetField f) {
+    this.sourceField = f.sourceField;
+    this.targetField = f.targetField;
+    this.targetType = f.targetType;
+    this.targetFormat = f.targetFormat;
+    this.targetLength = f.targetLength;
+    this.targetPrecision = f.targetPrecision;
+  }
+
+  public ParquetField(
+      String sourceField,
+      String targetField,
+      String targetType,
+      String targetFormat,
+      String targetLength,
+      String targetPrecision) {
+    this.sourceField = sourceField;
+    this.targetField = targetField;
+    this.targetType = targetType;
+    this.targetFormat = targetFormat;
+    this.targetLength = targetLength;
+    this.targetPrecision = targetPrecision;
+  }
 
   public IValueMeta createValueMeta() throws HopException {
     int type = ValueMetaFactory.getIdForValueMeta(targetType);
-    IValueMeta valueMeta =
-        ValueMetaFactory.createValueMeta(targetField, type, targetLength, targetPrecision);
+    int length = Const.toInt(targetLength, -1);
+    int precision = Const.toInt(targetPrecision, -1);
+    IValueMeta valueMeta = ValueMetaFactory.createValueMeta(targetField, type, length, precision);
     valueMeta.setConversionMask(targetFormat);
     return valueMeta;
   }
