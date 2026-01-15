@@ -327,6 +327,22 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     PropsUi.setLook(wContentComp);
     wContentComp.setLayout(contentLayout);
 
+    Label wlMetaFilename = new Label(wContentComp, SWT.RIGHT);
+    wlMetaFilename.setText(BaseMessages.getString(PKG, "ParquetInputDialog.MetaFilename.Label"));
+    PropsUi.setLook(wlMetaFilename);
+    FormData fdlMetaFilename = new FormData();
+    fdlMetaFilename.left = new FormAttachment(0, 0);
+    fdlMetaFilename.right = new FormAttachment(middle, -margin);
+    fdlMetaFilename.top = new FormAttachment(0, margin);
+    wlMetaFilename.setLayoutData(fdlMetaFilename);
+    wMetaFilename = new TextVar(variables, wContentComp, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+    PropsUi.setLook(wMetaFilename);
+    FormData fdMetaFilename = new FormData();
+    fdMetaFilename.left = new FormAttachment(middle, 0);
+    fdMetaFilename.top = new FormAttachment(0, 0);
+    fdMetaFilename.right = new FormAttachment(100, 0);
+    wMetaFilename.setLayoutData(fdMetaFilename);
+
     // ///////////////////////////////
     // START OF AddFileResult GROUP //
     // ///////////////////////////////
@@ -367,7 +383,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
     FormData fdgAddFileResult = new FormData();
     fdgAddFileResult.left = new FormAttachment(0, margin);
-    fdgAddFileResult.top = new FormAttachment(0, margin);
+    fdgAddFileResult.top = new FormAttachment(wMetaFilename, margin);
     fdgAddFileResult.right = new FormAttachment(100, -margin);
     gAddFileResult.setLayoutData(fdgAddFileResult);
 
@@ -694,29 +710,13 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     fdExcludeFilemask.right = new FormAttachment(wFilename, 0, SWT.RIGHT);
     wExcludeFilemask.setLayoutData(fdExcludeFilemask);
 
-    Label wlMetaFilename = new Label(shell, SWT.RIGHT);
-    wlMetaFilename.setText(BaseMessages.getString(PKG, "ParquetInputDialog.MetaFilename.Label"));
-    PropsUi.setLook(wlMetaFilename);
-    FormData fdlMetaFilename = new FormData();
-    fdlMetaFilename.left = new FormAttachment(0, 0);
-    fdlMetaFilename.right = new FormAttachment(middle, -margin);
-    fdlMetaFilename.top = new FormAttachment(wExcludeFilemask, margin);
-    wlMetaFilename.setLayoutData(fdlMetaFilename);
-    wMetaFilename = new TextVar(variables, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-    PropsUi.setLook(wMetaFilename);
-    FormData fdMetaFilename = new FormData();
-    fdMetaFilename.left = new FormAttachment(middle, 0);
-    fdMetaFilename.top = new FormAttachment(wlMetaFilename, 0, SWT.CENTER);
-    fdMetaFilename.right = new FormAttachment(100, 0);
-    wMetaFilename.setLayoutData(fdMetaFilename);
-
     // Filename list line
     wlFilenameList = new Label(wFileComp, SWT.RIGHT);
     wlFilenameList.setText(BaseMessages.getString(PKG, "ParquetInputDialog.FilenameList.Label"));
     PropsUi.setLook(wlFilenameList);
     FormData fdlFilenameList = new FormData();
     fdlFilenameList.left = new FormAttachment(0, 0);
-    fdlFilenameList.top = new FormAttachment(wMetaFilename, margin);
+    fdlFilenameList.top = new FormAttachment(wExcludeFilemask, margin);
     fdlFilenameList.right = new FormAttachment(middle, -margin);
     wlFilenameList.setLayoutData(fdlFilenameList);
 
@@ -728,7 +728,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
         BaseMessages.getString(PKG, "ParquetInputDialog.FilenameDelete.Tooltip"));
     FormData fdbdFilename = new FormData();
     fdbdFilename.right = new FormAttachment(100, 0);
-    fdbdFilename.top = new FormAttachment(wMetaFilename, margin);
+    fdbdFilename.top = new FormAttachment(wExcludeFilemask, margin);
     wbdFilename.setLayoutData(fdbdFilename);
 
     wbeFilename = new Button(wFileComp, SWT.PUSH | SWT.CENTER);
