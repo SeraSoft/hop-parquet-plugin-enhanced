@@ -95,6 +95,8 @@ public class ParquetInputEnhancedMeta
   public static final String YES = "Y";
 
   @HopMetadataProperty(key = "filename_field")
+  @Getter
+  @Setter
   private String filenameField;
 
   /** The fields to import... */
