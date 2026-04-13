@@ -36,8 +36,8 @@ public class ParquetOutputStream extends PositionOutputStream {
 
   @Override
   public void write(int b) throws IOException {
-    position++;
     outputStream.write(b);
+    position++;
   }
 
   @Override
