@@ -128,7 +128,10 @@ public class ParquetOutputEnhancedMeta
     this.filenameInField = m.filenameInField;
     this.filenameField = m.filenameField;
     this.addToResultFilenames = m.addToResultFilenames;
-    this.fields = m.fields;
+    this.fields = new ArrayList<>();
+    for (ParquetField f : m.fields) {
+      this.fields.add(new ParquetField(f));
+    }
   }
 
   public boolean isFilenameInField() {
