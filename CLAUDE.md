@@ -97,6 +97,7 @@ Install by extracting into `plugins/tech/parquet-enhanced/` inside a Hop install
 - **No co-author references** in commit messages or PR descriptions
 - **Every code change on a dedicated branch**, then merged into `main` via PR
 - **Every work plan item must be mapped to a GitHub Issue**
+- **Claude creates PRs, the user merges them** — never merge a PR autonomously
 
 ## Work Plans
 
