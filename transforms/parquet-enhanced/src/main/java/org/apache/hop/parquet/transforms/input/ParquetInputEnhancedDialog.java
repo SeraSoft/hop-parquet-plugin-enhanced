@@ -982,7 +982,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
           new ColumnInfo(
               BaseMessages.getString(PKG, "ParquetInputDialog.FieldsColumn.SourceField.Label"),
               ColumnInfo.COLUMN_TYPE_TEXT,
-              new String[0]),
+              false),
           new ColumnInfo(
               BaseMessages.getString(PKG, "ParquetInputDialog.FieldsColumn.TargetField.Label"),
               ColumnInfo.COLUMN_TYPE_TEXT,
