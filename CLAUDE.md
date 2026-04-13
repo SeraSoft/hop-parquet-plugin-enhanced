@@ -98,6 +98,7 @@ Install by extracting into `plugins/tech/parquet-enhanced/` inside a Hop install
 - **Every code change on a dedicated branch**, then merged into `main` via PR
 - **Every work plan item must be mapped to a GitHub Issue**
 - **Claude creates PRs, the user merges them** — never merge a PR autonomously
+- **PR body must include closing keywords** for all related issues (e.g., `Fixes #8`, `Closes #12`) so they auto-close on merge
 
 ## Work Plans
 
