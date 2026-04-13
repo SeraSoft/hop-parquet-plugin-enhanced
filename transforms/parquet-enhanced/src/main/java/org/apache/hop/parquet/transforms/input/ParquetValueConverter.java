@@ -112,7 +112,7 @@ public class ParquetValueConverter extends PrimitiveConverter {
                   .add(BigInteger.valueOf(nsDay));
           BigInteger bms = bns.divide(BigInteger.valueOf(1000000));
           long ms = bms.longValue();
-          int nanos = (int) (ms % 1000000000);
+          int nanos = bns.remainder(BigInteger.valueOf(1000000000)).intValue();
           Timestamp timestamp = new Timestamp(ms);
           timestamp.setNanos(nanos);
           object = timestamp;
@@ -155,7 +155,7 @@ public class ParquetValueConverter extends PrimitiveConverter {
           int scale =
               ((LogicalTypeAnnotation.DecimalLogicalTypeAnnotation) this.logicalTypeAnnotation)
                   .getScale();
-          object = (new BigDecimal(((BigDecimal) object).doubleValue())).movePointLeft(scale);
+          object = ((BigDecimal) object).movePointLeft(scale);
         }
         break;
       case IValueMeta.TYPE_TIMESTAMP:
@@ -309,7 +309,7 @@ public class ParquetValueConverter extends PrimitiveConverter {
       if (unscaledNew <= -Math.pow(10, 18) || unscaledNew >= Math.pow(10, 18)) {
         return new BigDecimal(unscaledNew);
       } else {
-        return BigDecimal.valueOf(unscaledNew / Math.pow(10, scale));
+        return BigDecimal.valueOf(unscaledNew).movePointLeft(scale);
       }
     } else {
       return new BigDecimal(new BigInteger(value.getBytes()), scale);
