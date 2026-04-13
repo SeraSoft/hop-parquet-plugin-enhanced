@@ -198,14 +198,17 @@ public class ParquetInputEnhanced
                 PKG, "ExcelInput.Log.OpeningFile", "" + data.filenr + " : " + data.filename));
       }
 
-      FileObject fileObject = HopVfs.getFileObject(data.filename);
-      data.inputStream = HopVfs.getInputStream(fileObject);
-
-      // Reads the whole file into memory...
-      //
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) data.size);
-      IOUtils.copy(data.inputStream, outputStream);
-      ParquetStream inputFile = new ParquetStream(outputStream.toByteArray(), data.filename);
+      // Read the entire file into memory, then immediately release the VFS file handle
+      // and input stream so the OS file lock is freed before we start parsing.
+      byte[] fileBytes;
+      try (FileObject fileObject = HopVfs.getFileObject(data.filename)) {
+        try (var inputStream = HopVfs.getInputStream(fileObject)) {
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) data.size);
+          IOUtils.copy(inputStream, outputStream);
+          fileBytes = outputStream.toByteArray();
+        }
+      }
+      ParquetStream inputFile = new ParquetStream(fileBytes, data.filename);
       List<ParquetField> fields = new ArrayList<>(meta.getFields());
 
       // If we don't have any fields specified, we read them all.
@@ -300,13 +303,20 @@ public class ParquetInputEnhanced
   }
 
   public void closeFile() {
-    if (data.reader != null && data.inputStream != null) {
-      try {
+    try {
+      if (data.reader != null) {
         data.reader.close();
-        data.inputStream.close();
-      } catch (IOException e) {
-        logError("Unable to properly close parquet reader!");
       }
+    } catch (IOException e) {
+      logError("Unable to properly close parquet reader!");
+    }
+    try {
+      if (data.file != null) {
+        data.file.close();
+        data.file = null;
+      }
+    } catch (IOException e) {
+      logError("Unable to properly close VFS file object!");
     }
   }
 
