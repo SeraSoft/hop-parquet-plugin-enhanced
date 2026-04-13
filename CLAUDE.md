@@ -95,6 +95,12 @@ Install by extracting into `plugins/tech/parquet-enhanced/` inside a Hop install
 ## Git and PR Rules
 
 - **No co-author references** in commit messages or PR descriptions
+- **Every code change on a dedicated branch**, then merged into `main` via PR
+- **Every work plan item must be mapped to a GitHub Issue**
+
+## Work Plans
+
+- Work plans are saved in `docs/PIANO_LAVORO.md` for reference
 
 ## Diagrams and Mockups
 
