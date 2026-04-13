@@ -982,7 +982,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
           new ColumnInfo(
               BaseMessages.getString(PKG, "ParquetInputDialog.FieldsColumn.SourceField.Label"),
               ColumnInfo.COLUMN_TYPE_TEXT,
-              new String[0]),
+              false),
           new ColumnInfo(
               BaseMessages.getString(PKG, "ParquetInputDialog.FieldsColumn.TargetField.Label"),
               ColumnInfo.COLUMN_TYPE_TEXT,
@@ -1000,12 +1000,10 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
           new ColumnInfo(
               BaseMessages.getString(PKG, "ParquetInputDialog.FieldsColumn.TargetLength.Label"),
               ColumnInfo.COLUMN_TYPE_TEXT,
-              true,
               false),
           new ColumnInfo(
               BaseMessages.getString(PKG, "ParquetInputDialog.FieldsColumn.TargetPrecision.Label"),
               ColumnInfo.COLUMN_TYPE_TEXT,
-              true,
               false),
         };
 
@@ -1166,8 +1164,8 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
       item.setText(2, Const.NVL(field.getTargetField(), ""));
       item.setText(3, Const.NVL(field.getTargetType(), ""));
       item.setText(4, Const.NVL(field.getTargetFormat(), ""));
-      item.setText(5, String.valueOf(field.getTargetLength()));
-      item.setText(6, String.valueOf(field.getTargetPrecision()));
+      item.setText(5, Const.NVL(field.getTargetLength(), ""));
+      item.setText(6, Const.NVL(field.getTargetPrecision(), ""));
     }
 
     wInclFilenameField.setText(Const.NVL(meta.getFileField(), ""));
