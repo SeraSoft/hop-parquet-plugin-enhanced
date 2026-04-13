@@ -19,6 +19,7 @@ package org.apache.hop.parquet.transforms.input;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -58,20 +59,24 @@ public class ParquetInputStream extends SeekableInputStream {
   @Override
   public int read(byte[] buffer) throws IOException {
     int bytesRead = inputStream.read(buffer);
-    position += bytesRead;
+    if (bytesRead > 0) {
+      position += bytesRead;
+    }
     return bytesRead;
   }
 
   @Override
-  public int read(byte[] bytes, int i, int i1) throws IOException {
-    int bytesRead = super.read(bytes, i, i1);
-    position += bytesRead;
+  public int read(byte[] bytes, int offset, int length) throws IOException {
+    int bytesRead = inputStream.read(bytes, offset, length);
+    if (bytesRead > 0) {
+      position += bytesRead;
+    }
     return bytesRead;
   }
 
   @Override
-  public long skip(long l) throws IOException {
-    long skipped = super.skip(l);
+  public long skip(long n) throws IOException {
+    long skipped = inputStream.skip(n);
     position += skipped;
     return skipped;
   }
@@ -87,9 +92,8 @@ public class ParquetInputStream extends SeekableInputStream {
   }
 
   @Override
-  public synchronized void mark(int pos) {
-    inputStream.mark(pos);
-    position = pos;
+  public synchronized void mark(int readLimit) {
+    inputStream.mark(readLimit);
   }
 
   @Override
@@ -111,39 +115,71 @@ public class ParquetInputStream extends SeekableInputStream {
   @Override
   public void seek(long pos) throws IOException {
     inputStream.reset();
-    inputStream.skip(pos);
+    long remaining = pos;
+    while (remaining > 0) {
+      long skipped = inputStream.skip(remaining);
+      if (skipped <= 0) {
+        throw new EOFException(
+            "Cannot seek to position " + pos + " in stream of " + bytes.length + " bytes");
+      }
+      remaining -= skipped;
+    }
     position = pos;
   }
 
   @Override
   public void readFully(byte[] buffer) throws IOException {
-    int read = inputStream.read(buffer);
-    position += read;
+    readFully(buffer, 0, buffer.length);
   }
 
   @Override
-  public void readFully(byte[] buffer, int i, int i1) throws IOException {
-    int read = inputStream.read(buffer, i, i1);
-    position += read;
+  public void readFully(byte[] buffer, int offset, int length) throws IOException {
+    int totalRead = 0;
+    while (totalRead < length) {
+      int read = inputStream.read(buffer, offset + totalRead, length - totalRead);
+      if (read < 0) {
+        throw new EOFException(
+            "Reached end of stream after reading " + totalRead + " bytes, expected " + length);
+      }
+      totalRead += read;
+    }
+    position += totalRead;
   }
 
   @Override
   public int read(ByteBuffer byteBuffer) throws IOException {
-    int read = inputStream.read(byteBuffer.array());
-    position += read;
+    int read = inputStream.read(byteBuffer.array(), byteBuffer.position(), byteBuffer.remaining());
+    if (read > 0) {
+      position += read;
+      byteBuffer.position(byteBuffer.position() + read);
+    }
     return read;
   }
 
   @Override
   public void readFully(ByteBuffer byteBuffer) throws IOException {
-    int read = inputStream.read(byteBuffer.array());
-    position += read;
+    int length = byteBuffer.remaining();
+    int totalRead = 0;
+    while (totalRead < length) {
+      int read =
+          inputStream.read(
+              byteBuffer.array(), byteBuffer.position() + totalRead, length - totalRead);
+      if (read < 0) {
+        throw new EOFException(
+            "Reached end of stream after reading " + totalRead + " bytes, expected " + length);
+      }
+      totalRead += read;
+    }
+    byteBuffer.position(byteBuffer.position() + totalRead);
+    position += totalRead;
   }
 
   @Override
   public int read() throws IOException {
     int c = inputStream.read();
-    position++;
+    if (c >= 0) {
+      position++;
+    }
     return c;
   }
 }
