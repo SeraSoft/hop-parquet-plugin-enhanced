@@ -17,6 +17,7 @@
 
 package org.apache.hop.parquet.transforms.output;
 
+import java.util.logging.Logger;
 import org.apache.hop.metadata.api.IEnumHasCode;
 
 public enum ParquetVersion implements IEnumHasCode {
@@ -39,12 +40,19 @@ public enum ParquetVersion implements IEnumHasCode {
     return descriptions;
   }
 
+  private static final Logger logger = Logger.getLogger(ParquetVersion.class.getName());
+
   public static ParquetVersion getVersionFromDescription(String description) {
     for (ParquetVersion version : values()) {
-      if (version.getDescription().equals(description)) {
+      if (version.getDescription().equalsIgnoreCase(description)) {
         return version;
       }
     }
+    logger.warning(
+        "Unknown Parquet version description '"
+            + description
+            + "', falling back to "
+            + Version1.getDescription());
     return Version1;
   }
 
