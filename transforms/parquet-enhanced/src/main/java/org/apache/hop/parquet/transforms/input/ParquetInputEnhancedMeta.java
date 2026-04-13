@@ -387,7 +387,7 @@ public class ParquetInputEnhancedMeta
   public FileInputList getFileList(IVariables variables) {
 
     if (fileItems == null || fileItems.isEmpty()) {
-      return null;
+      return new FileInputList();
     }
 
     String[] fileName = new String[fileItems.size()];
