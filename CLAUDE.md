@@ -100,6 +100,12 @@ Install by extracting into `plugins/tech/parquet-enhanced/` inside a Hop install
 - **Claude creates PRs, the user merges them** — never merge a PR autonomously
 - **PR body must include closing keywords** for all related issues (e.g., `Fixes #8`, `Closes #12`) so they auto-close on merge
 
+## Tools and References
+
+- **Always use context7** to look up documentation for libraries and frameworks used in this project
+- **Always use Serena** for code analysis and symbol navigation within this project
+- **Always reference the `hop-serasoft` project in Serena** when you need to understand Apache Hop internals, patterns, or conventions to develop a feature or fix a bug
+
 ## Work Plans
 
 - Work plans are saved in `docs/PIANO_LAVORO.md` for reference
