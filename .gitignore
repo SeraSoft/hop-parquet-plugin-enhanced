@@ -28,4 +28,5 @@ Workflow Run Configuration/
 Hop Server/
 Relational Database Connection/
 \.temp-beam-*/
-
+.claude/
+.serena/
