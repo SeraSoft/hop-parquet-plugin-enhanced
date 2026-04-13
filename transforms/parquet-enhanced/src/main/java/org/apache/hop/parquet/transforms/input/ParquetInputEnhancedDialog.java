@@ -78,6 +78,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
       };
 
   protected ParquetInputEnhancedMeta input;
+  private boolean changed;
   private ModifyListener lsMod;
 
   private TableView wFields;
@@ -144,6 +145,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
     PropsUi.setLook(shell);
     setShellImage(shell, input);
     lsMod = e -> input.setChanged();
+    changed = input.hasChanged();
 
     FormLayout formLayout = new FormLayout();
     formLayout.marginWidth = PropsUi.getFormMargin();
@@ -299,6 +301,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
                 true));
 
     getData(input);
+    input.setChanged(changed);
 
     wTabFolder.setSelection(0);
 
@@ -1254,6 +1257,7 @@ public class ParquetInputEnhancedDialog extends BaseTransformDialog implements I
 
   private void cancel() {
     returnValue = null;
+    input.setChanged(changed);
     dispose();
   }
 }
