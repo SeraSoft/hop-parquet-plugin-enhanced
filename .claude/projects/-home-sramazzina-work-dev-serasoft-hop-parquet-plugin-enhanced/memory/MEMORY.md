@@ -1,0 +1,3 @@
+- [User Profile](user_profile.md) — Senior Java dev, Apache Hop plugin expertise, Italian speaker
+- [Language and Tools](feedback_language_and_tools.md) — English for docs/commits/PRs, Italian for issues/sessions; Mermaid for diagrams, Draw.io for mockups
+- [Session State](project_session_state.md) — Fix issue #6 su branch locale (da pushare), analisi test completata, piano test da creare
