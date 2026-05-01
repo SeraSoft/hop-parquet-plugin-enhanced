@@ -78,8 +78,8 @@ Uses Apache Commons VFS (`HopVfs`) for filesystem abstraction. Files read entire
 
 ## CI/CD
 
-- **PR builds** (`.github/workflows/pr-build.yml`): `mvn clean verify` on ubuntu-latest, JDK 17
-- **Releases** (`.github/workflows/release.yml`): triggered by `v*` tags from `main`, creates GitHub Release with assembly zip
+- **CI** (`.github/workflows/ci.yml`): `mvn clean verify` on ubuntu-latest, JDK 17, on PR and push to `main`. Uploads `snapshot-<sha>` artifact (5-day retention) on `main`.
+- **Releases** (`.github/workflows/release.yml`): triggered by SemVer tags `v[0-9]+.[0-9]+.[0-9]+*`, builds with `-Drevision=${VERSION}`, extracts the matching `CHANGELOG.md` section, computes sha256, publishes GitHub Release. Pre-release flag is set automatically when the tag has a `-` suffix. See `docs/guides/tech/release-process.md` for the full procedure.
 
 ## Distribution
 
