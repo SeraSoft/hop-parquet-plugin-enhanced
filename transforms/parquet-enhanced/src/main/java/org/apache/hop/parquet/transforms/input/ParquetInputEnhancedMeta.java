@@ -274,30 +274,28 @@ public class ParquetInputEnhancedMeta
   }
 
   public static IRowMeta extractRowMeta(IVariables variables, String filename) throws HopException {
-    try {
-      FileObject fileObject = HopVfs.getFileObject(variables.resolve(filename), variables);
-
+    try (FileObject fileObject = HopVfs.getFileObject(variables.resolve(filename), variables)) {
+      byte[] bytes;
       long size = fileObject.getContent().getSize();
-      InputStream inputStream = HopVfs.getInputStream(fileObject);
-
-      // Reads the whole file into memory...
-      //
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) size);
-      IOUtils.copy(inputStream, outputStream);
-      ParquetStream inputFile = new ParquetStream(outputStream.toByteArray(), filename);
+      try (InputStream inputStream = HopVfs.getInputStream(fileObject);
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) size)) {
+        IOUtils.copy(inputStream, outputStream);
+        bytes = outputStream.toByteArray();
+      }
+      ParquetStream inputFile = new ParquetStream(bytes, filename);
       // Empty list of fields to retrieve: we still grab the schema
       //
       ParquetReadSupport readSupport = new ParquetReadSupport(new ArrayList<>());
-      ParquetReader<RowMetaAndData> reader =
-          new ParquetReaderBuilder<>(readSupport, inputFile).build();
-
-      // Read one empty row...
-      //
-      reader.read();
-
-      // Now we have the schema...
-      //
-      MessageType schema = readSupport.getMessageType();
+      MessageType schema;
+      try (ParquetReader<RowMetaAndData> reader =
+          new ParquetReaderBuilder<>(readSupport, inputFile).build()) {
+        // Read one empty row...
+        //
+        reader.read();
+        // Now we have the schema...
+        //
+        schema = readSupport.getMessageType();
+      }
       IRowMeta rowMeta = new RowMeta();
       List<ColumnDescriptor> columns = schema.getColumns();
       for (ColumnDescriptor column : columns) {

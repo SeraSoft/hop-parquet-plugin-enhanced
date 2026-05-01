@@ -8,6 +8,10 @@ Under `[Unreleased]`, every pull request that introduces a user-visible change a
 
 ## [Unreleased]
 
+### Fixed
+
+- Parquet input file remained locked after using "Get fields" in the dialog: `ParquetInputEnhancedMeta.extractRowMeta` now closes the VFS `FileObject`, the input stream and the `ParquetReader` deterministically via try-with-resources (#22).
+
 ## [1.0.0-beta.1] - 2026-05-01
 
 ### Added
