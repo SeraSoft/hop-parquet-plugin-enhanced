@@ -1,54 +1,81 @@
-name: Release Plugin
+name: Release
 
 on:
   push:
     tags:
-      - 'v*'
-
-permissions:
-  contents: write
-  packages: read
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Verify tag is from main branch
+      - name: Validate SemVer tag
         run: |
-          # Ottieni il commit del tag
-          TAG_COMMIT=$(git rev-list -n 1 ${{ github.ref }})
-          # Verifica se il commit è nel branch main
-          if ! git branch -r --contains $TAG_COMMIT | grep -q 'origin/main'; then
-            echo "Error: Tag must be created from main branch"
+          TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)\.[0-9]+)?$ ]]; then
+            echo "::error::Tag '$TAG' is not a valid SemVer release/pre-release tag (expected vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-{alpha,beta,rc}.N)." >&2
             exit 1
           fi
-          echo "Tag is from main branch, proceeding with release"
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'maven'
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
       - name: Build with Maven
-        run: mvn clean package -s .m2/settings.xml
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn -B -Drevision=${{ steps.version.outputs.VERSION }} clean package -s .m2/settings.xml
+
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          if [ ! -f CHANGELOG.md ]; then
+            echo "::error::CHANGELOG.md not found." >&2
+            exit 1
+          fi
+          section=$(awk -v hdr="## [$VERSION]" '
+            index($0, hdr) == 1 { flag=1; next }
+            flag && (/^## \[/ || /^\[[^]]+\]: /) { exit }
+            flag { print }
+          ' CHANGELOG.md)
+          if [ -z "$(echo "$section" | tr -d '[:space:]')" ]; then
+            echo "::error::No CHANGELOG section found for version $VERSION." >&2
+            exit 1
+          fi
+          {
+            echo "body<<CHANGELOG_EOF"
+            echo "## Changelog"
+            echo ""
+            echo "$section"
+            echo "CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Compute sha256
+        run: |
+          cd assemblies/assemblies-parquet-enhanced/target
+          sha256sum "hop-parquet-plugin-${{ steps.version.outputs.VERSION }}.zip" \
+            > "hop-parquet-plugin-${{ steps.version.outputs.VERSION }}.zip.sha256"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
-          files: assemblies/assemblies-parquet-enhanced/target/hop-parquet-plugin-*.zip
+          files: |
+            assemblies/assemblies-parquet-enhanced/target/hop-parquet-plugin-${{ steps.version.outputs.VERSION }}.zip
+            assemblies/assemblies-parquet-enhanced/target/hop-parquet-plugin-${{ steps.version.outputs.VERSION }}.zip.sha256
           generate_release_notes: true
-          draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body: ${{ steps.changelog.outputs.body }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
