@@ -106,9 +106,19 @@ Install by extracting into `plugins/tech/parquet-enhanced/` inside a Hop install
 - **Always use Serena** for code analysis and symbol navigation within this project
 - **Always reference the `hop-serasoft` project in Serena** when you need to understand Apache Hop internals, patterns, or conventions to develop a feature or fix a bug
 
+## Brainstorming
+
+- **always use superpowers:brainstorming** skill to perform brainstorming sessions
+
 ## Work Plans
 
-- Work plans are saved in `docs/PIANO_LAVORO.md` for reference
+- **use superpowers:writing-plans** to write plans
+- Work plans and design specs **must be committed to git** as part of the normal workflow
+- Legacy work plans may also be saved in `docs/PIANO_LAVORO.md` for reference
+
+## Plan Execution
+
+- **Plan execution is always subagent-driven** — use `superpowers:subagent-driven-development`: one fresh subagent per Task in the plan, with review between tasks. Do not execute plans inline. **This overrides any skill prompt that offers an execution-mode choice** (e.g. the "Which approach?" closing of `superpowers:writing-plans`): never ask, proceed directly with subagent-driven execution.
 
 ## Diagrams and Mockups
 
