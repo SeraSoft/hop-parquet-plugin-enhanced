@@ -5,7 +5,7 @@
     <parent>
         <artifactId>hop-parquet-assemblies</artifactId>
         <groupId>org.apache.hop</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,14 +13,13 @@
     <artifactId>assemblies-parquet-enhanced</artifactId>
 
     <properties>
-        <plugin.version>2.16.2</plugin.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.hop</groupId>
             <artifactId>parquet-enhanced</artifactId>
-            <version>${plugin.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.activation</groupId>
@@ -131,7 +130,7 @@
                                 <configuration>
                                     <descriptorSourceDirectory>${basedir}/src/assembly</descriptorSourceDirectory>
                                     <appendAssemblyId>false</appendAssemblyId>
-                                    <finalName>hop-parquet-plugin-${plugin.version}</finalName>
+                                    <finalName>hop-parquet-plugin-${project.version}</finalName>
                                 </configuration>
                             </execution>
                         </executions>

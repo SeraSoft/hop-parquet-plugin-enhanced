@@ -7,7 +7,7 @@
     <groupId>org.apache.hop</groupId>
     <artifactId>hop-parquet-plugin</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <name>Hop Enhanced Parquet Plugin</name>
     <description>Maven POM for enhanced parquet plugin</description>
     <url>https://hop.apache.org</url>
@@ -16,6 +16,10 @@
     <properties>
         <!-- Set this to the Hop version you want to debug against-->
         <hop.version>2.16.2</hop.version>
+
+        <!-- CI Friendly Versions: overridable from CLI with -Drevision=X.Y.Z -->
+        <revision>1.0.0-SNAPSHOT</revision>
+        <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
 
         <!-- Third-party dependencies-->
         <org.eclipse.platform.version>3.119.0</org.eclipse.platform.version>
@@ -177,6 +181,11 @@
                     <artifactId>jandex-maven-plugin</artifactId>
                     <version>${jandex.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${flatten-maven-plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -197,6 +206,30 @@
                         <id>make-index</id>
                         <goals>
                             <goal>jandex</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
                         </goals>
                     </execution>
                 </executions>
