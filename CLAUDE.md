@@ -102,9 +102,14 @@ Install by extracting into `plugins/tech/parquet-enhanced/` inside a Hop install
 
 ## Tools and References
 
-- **Always use context7** to look up documentation for libraries and frameworks used in this project
-- **Always use Serena** for code analysis and symbol navigation within this project
-- **Always reference the `hop-serasoft` project in Serena** when you need to understand Apache Hop internals, patterns, or conventions to develop a feature or fix a bug
+- **Always use context7** to look up documentation for libraries and frameworks used in this project.
+- **Always use Serena** for code analysis and symbol navigation within this project — **prefer Serena's symbolic tools (`find_symbol`, `get_symbols_overview`, `find_referencing_symbols`, `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`) over reading whole files with `Read`**. Use `Read` only for small files (< ~50 lines), configuration, or non-code content (Markdown, YAML, properties).
+- **At session start**: activate Serena on this project (`activate_project` with the repository path) and verify onboarding (`check_onboarding_performed`; if it returns false, run `onboarding`). Do this once per session before any code task.
+- **When dispatching subagents on code tasks, the dispatch prompt MUST repeat the Serena directive verbatim** — subagents do not see this CLAUDE.md, so the rule has to travel inside the prompt or it is lost.
+- **Always reference the `hop-serasoft` project in Serena** when you need to understand Apache Hop internals, patterns, or conventions to develop a feature or fix a bug. The Apache Hop sources are indexed there, not in this repository.
+  - **How to consult it**: switch the active project with `activate_project("hop-serasoft")`, run the symbolic lookup (`find_symbol`, `get_symbols_overview`, `find_referencing_symbols`), then **switch back to this project** with `activate_project("<this-project-path-or-name>")` before doing anything else. All Serena tools operate on the currently active project, so editing without switching back will write into the wrong tree.
+  - **Hop is read-only.** Never use `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`, `safe_delete_symbol`, or any write tool while `hop-serasoft` is active. Use it only for `find_*` / `get_*` queries.
+  - **Subagent dispatch**: when a subagent needs Hop knowledge, the dispatch prompt MUST spell out the activate-query-deactivate cycle and the read-only constraint above. The subagent does not inherit these rules.
 
 ## Brainstorming
 
@@ -133,3 +138,4 @@ Install by extracting into `plugins/tech/parquet-enhanced/` inside a Hop install
 4. Lombok `@Getter`/`@Setter` on Meta fields, `@HopMetadataProperty` for serialization
 5. New runtime dependencies added to `assembly.xml`
 6. No unit tests exist yet — consider adding them for new logic
+7. If the PR introduces a user-visible change (feature, behaviour change, bug fix, removal, deprecation, security fix), add an entry under `[Unreleased]` in `CHANGELOG.md` in the appropriate category. Pure refactors, internal tests, CI tweaks and similar invisible changes do not require an entry.
