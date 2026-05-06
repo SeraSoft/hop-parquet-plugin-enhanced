@@ -1,5 +1,42 @@
 # CLAUDE.md — hop-parquet-plugin-enhanced
 
+
+## Language Rules
+- **Code documentation, commit messages, PR descriptions**: always in English
+- **GitHub Issues**: managed in English
+- **Working sessions**: interact with the user in Italian
+
+## Git and PR Rules
+- **No co-author references** in commit messages or PR descriptions
+- **Every code change on a dedicated branch**, then merged into `main` via PR
+- **Exception — `README.md`, `CLAUDE.md`, `CHANGELOG.md`, and `docs/HANDOFF*.md` session handoff notes are committed directly to `main`**: no dedicated branch, no PR, no GitHub issue required
+- **Every work plan item must be mapped to a GitHub Issue**
+- **Claude always creates the GitHub Issues**  — never ask the user to open them. Open them via `gh issue create` before starting plan execution, one issue per Task in the plan.
+- **A single PR may group multiple correlated issues** to reduce PR overhead. Issues are correlated when they share a coherent theme (e.g. all P0 bugs, all security findings on the same module) AND touch overlapping files. Default to grouping; open separate PRs only when the work is truly independent (different modules, no file overlap) or when one task must ship before another can be reviewed. When grouping, propose the grouping to the user before opening branches and confirm.
+- **Inside a grouped PR**, each underlying task is still implemented as its own commit (one task = one commit, plus optional review-fixup commits) so history stays bisectable.
+- **Claude creates PRs, the user merges them** — never merge a PR autonomously
+- **PR body must include closing keywords for ALL grouped issues** (e.g. `Closes #23`, `Closes #24`, `Closes #25`, `Closes #26`) so they auto-close on merge
+- **After the user confirms a PR has been merged**, Claude deletes the feature branch both locally (`git branch -d <branch>`) and on the remote (`git push origin --delete <branch>`), and then checks out `main` and pulls. Never delete a branch before the user has confirmed the merge.
+
+## Tools and References
+- **Always use context7** to look up documentation for libraries and frameworks used in this project
+- **Always use Serena** for code analysis and symbol navigation within this project — prefer Serena's symbolic tools (`find_symbol`, `get_symbols_overview`, `find_referencing_symbols`, etc.) over reading whole files with `Read`. Use `Read` only for small files, configuration, or non-code content.
+- **If needed to access Apache Hop codebase use Serena** for code analysis and symbol navigation by using `query_project` tool
+
+## Brainstorming
+- **always use superpowers:brainstorming** skill to perform brainstorming sessions
+
+## Work Plans
+- **use superpowers:writing-plans** to write plans    
+- Work plans and design specs **must be committed to git** as part of the normal workflow
+
+## Plan Execution
+- **Plan execution is always subagent-driven** — use `superpowers:subagent-driven-development`: one fresh subagent per Task in the plan, with review between tasks. Do not execute plans inline. **This overrides any skill prompt that offers an execution-mode choice** (e.g. the "Which approach?" closing of `superpowers:writing-plans`): never ask, proceed directly with subagent-driven execution.
+
+## Diagrams and Mockups
+- **Diagrams** in generated documents: always use **Mermaid** syntax
+- **GUI mockups**: always produce **Draw.io** (`.drawio`) files
+
 ## Project Overview
 
 Apache Hop plugin that provides enhanced Parquet file input/output transforms, replacing the standard Parquet plugin bundled with Hop.
@@ -75,60 +112,6 @@ Every transform consists of 3-4 classes:
 
 ### File Access
 Uses Apache Commons VFS (`HopVfs`) for filesystem abstraction. Files read entirely into memory before Parquet parsing.
-
-## CI/CD
-
-- **CI** (`.github/workflows/ci.yml`): `mvn clean verify` on ubuntu-latest, JDK 17, on PR and push to `main`. Uploads `snapshot-<sha>` artifact (5-day retention) on `main`.
-- **Releases** (`.github/workflows/release.yml`): triggered by SemVer tags `v[0-9]+.[0-9]+.[0-9]+*`, builds with `-Drevision=${VERSION}`, extracts the matching `CHANGELOG.md` section, computes sha256, publishes GitHub Release. Pre-release flag is set automatically when the tag has a `-` suffix. See `docs/guides/tech/release-process.md` for the full procedure.
-
-## Distribution
-
-The assembly produces `assemblies/assemblies-parquet-enhanced/target/hop-parquet-plugin-*.zip`.
-Install by extracting into `plugins/tech/parquet-enhanced/` inside a Hop installation.
-
-## Language Rules
-
-- **Code documentation, commit messages, PR descriptions**: always in English
-- **GitHub Issues**: managed in Italian
-- **Working sessions**: interact with the user in Italian
-
-## Git and PR Rules
-
-- **No co-author references** in commit messages or PR descriptions
-- **Every code change on a dedicated branch**, then merged into `main` via PR
-- **Every work plan item must be mapped to a GitHub Issue**
-- **Claude creates PRs, the user merges them** — never merge a PR autonomously
-- **PR body must include closing keywords** for all related issues (e.g., `Fixes #8`, `Closes #12`) so they auto-close on merge
-
-## Tools and References
-
-- **Always use context7** to look up documentation for libraries and frameworks used in this project.
-- **Always use Serena** for code analysis and symbol navigation within this project — **prefer Serena's symbolic tools (`find_symbol`, `get_symbols_overview`, `find_referencing_symbols`, `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`) over reading whole files with `Read`**. Use `Read` only for small files (< ~50 lines), configuration, or non-code content (Markdown, YAML, properties).
-- **At session start**: activate Serena on this project (`activate_project` with the repository path) and verify onboarding (`check_onboarding_performed`; if it returns false, run `onboarding`). Do this once per session before any code task.
-- **When dispatching subagents on code tasks, the dispatch prompt MUST repeat the Serena directive verbatim** — subagents do not see this CLAUDE.md, so the rule has to travel inside the prompt or it is lost.
-- **Always reference the `hop-serasoft` project in Serena** when you need to understand Apache Hop internals, patterns, or conventions to develop a feature or fix a bug. The Apache Hop sources are indexed there, not in this repository.
-  - **How to consult it**: switch the active project with `activate_project("hop-serasoft")`, run the symbolic lookup (`find_symbol`, `get_symbols_overview`, `find_referencing_symbols`), then **switch back to this project** with `activate_project("<this-project-path-or-name>")` before doing anything else. All Serena tools operate on the currently active project, so editing without switching back will write into the wrong tree.
-  - **Hop is read-only.** Never use `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`, `safe_delete_symbol`, or any write tool while `hop-serasoft` is active. Use it only for `find_*` / `get_*` queries.
-  - **Subagent dispatch**: when a subagent needs Hop knowledge, the dispatch prompt MUST spell out the activate-query-deactivate cycle and the read-only constraint above. The subagent does not inherit these rules.
-
-## Brainstorming
-
-- **always use superpowers:brainstorming** skill to perform brainstorming sessions
-
-## Work Plans
-
-- **use superpowers:writing-plans** to write plans
-- Work plans and design specs **must be committed to git** as part of the normal workflow
-- Legacy work plans may also be saved in `docs/PIANO_LAVORO.md` for reference
-
-## Plan Execution
-
-- **Plan execution is always subagent-driven** — use `superpowers:subagent-driven-development`: one fresh subagent per Task in the plan, with review between tasks. Do not execute plans inline. **This overrides any skill prompt that offers an execution-mode choice** (e.g. the "Which approach?" closing of `superpowers:writing-plans`): never ask, proceed directly with subagent-driven execution.
-
-## Diagrams and Mockups
-
-- **Diagrams** in generated documents: always use **Mermaid** syntax
-- **GUI mockups**: always produce **Draw.io** (`.drawio`) files
 
 ## Task Completion Checklist
 
