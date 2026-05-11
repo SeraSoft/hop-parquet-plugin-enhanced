@@ -1,42 +1,6 @@
 # CLAUDE.md — hop-parquet-plugin-enhanced
 
 
-## Language Rules
-- **Code documentation, commit messages, PR descriptions**: always in English
-- **GitHub Issues**: managed in English
-- **Working sessions**: interact with the user in Italian
-
-## Git and PR Rules
-- **No co-author references** in commit messages or PR descriptions
-- **Every code change on a dedicated branch**, then merged into `main` via PR
-- **Exception — `README.md`, `CLAUDE.md`, `CHANGELOG.md`, and `docs/HANDOFF*.md` session handoff notes are committed directly to `main`**: no dedicated branch, no PR, no GitHub issue required
-- **Every work plan item must be mapped to a GitHub Issue**
-- **Claude always creates the GitHub Issues**  — never ask the user to open them. Open them via `gh issue create` before starting plan execution, one issue per Task in the plan.
-- **A single PR may group multiple correlated issues** to reduce PR overhead. Issues are correlated when they share a coherent theme (e.g. all P0 bugs, all security findings on the same module) AND touch overlapping files. Default to grouping; open separate PRs only when the work is truly independent (different modules, no file overlap) or when one task must ship before another can be reviewed. When grouping, propose the grouping to the user before opening branches and confirm.
-- **Inside a grouped PR**, each underlying task is still implemented as its own commit (one task = one commit, plus optional review-fixup commits) so history stays bisectable.
-- **Claude creates PRs, the user merges them** — never merge a PR autonomously
-- **PR body must include closing keywords for ALL grouped issues** (e.g. `Closes #23`, `Closes #24`, `Closes #25`, `Closes #26`) so they auto-close on merge
-- **After the user confirms a PR has been merged**, Claude deletes the feature branch both locally (`git branch -d <branch>`) and on the remote (`git push origin --delete <branch>`), and then checks out `main` and pulls. Never delete a branch before the user has confirmed the merge.
-
-## Tools and References
-- **Always use context7** to look up documentation for libraries and frameworks used in this project
-- **Always use Serena** for code analysis and symbol navigation within this project — prefer Serena's symbolic tools (`find_symbol`, `get_symbols_overview`, `find_referencing_symbols`, etc.) over reading whole files with `Read`. Use `Read` only for small files, configuration, or non-code content.
-- **If needed to access Apache Hop codebase use Serena** for code analysis and symbol navigation by using `query_project` tool
-
-## Brainstorming
-- **always use superpowers:brainstorming** skill to perform brainstorming sessions
-
-## Work Plans
-- **use superpowers:writing-plans** to write plans    
-- Work plans and design specs **must be committed to git** as part of the normal workflow
-
-## Plan Execution
-- **Plan execution is always subagent-driven** — use `superpowers:subagent-driven-development`: one fresh subagent per Task in the plan, with review between tasks. Do not execute plans inline. **This overrides any skill prompt that offers an execution-mode choice** (e.g. the "Which approach?" closing of `superpowers:writing-plans`): never ask, proceed directly with subagent-driven execution.
-
-## Diagrams and Mockups
-- **Diagrams** in generated documents: always use **Mermaid** syntax
-- **GUI mockups**: always produce **Draw.io** (`.drawio`) files
-
 ## Project Overview
 
 Apache Hop plugin that provides enhanced Parquet file input/output transforms, replacing the standard Parquet plugin bundled with Hop.
