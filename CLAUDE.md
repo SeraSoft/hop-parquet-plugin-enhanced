@@ -9,6 +9,13 @@ Apache Hop plugin that provides enhanced Parquet file input/output transforms, r
 - **Target platform**: Apache Hop 2.16.2+
 - **License**: Apache 2.0 (ASF header required on all Java files)
 
+## Versioning policy
+
+- Project version and Hop version are decoupled. Release tags follow the project version (e.g. `v1.0.0`), not the Hop version.
+- The project version is carried by the `<revision>` property in the root `pom.xml` (Maven CI-friendly versions); every reactor module references it via `${revision}`. `flatten-maven-plugin` produces a flattened POM at `package` so published artifacts contain the resolved version. The release workflow overrides `-Drevision=<tag-version>` at build time.
+- On `main`, `<revision>` is `X.Y.Z-SNAPSHOT`. After cutting a final `vX.Y.Z` release, `main` is bumped to `X.Y.(Z+1)-SNAPSHOT`. After a pre-release (`vX.Y.Z-{beta,rc}.N`), `<revision>` is **not** bumped — it stays at `X.Y.Z-SNAPSHOT` until the final `X.Y.Z` ships.
+- To upgrade the Hop version used for compilation, bump the `hop.version` Maven property and (if needed) the `<parent>` version in the root `pom.xml`. The project version does not have to change as a consequence.
+
 ## Tech Stack
 
 | Component       | Version  |
