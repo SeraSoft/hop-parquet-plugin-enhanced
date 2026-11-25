@@ -6,8 +6,6 @@ Generic Rules 1–16 come from the user-level layers: `~/.agent-dotfiles/AGENTS.
 
 Apache Hop plugin that provides enhanced Parquet file input/output transforms, replacing the standard Parquet plugin bundled with Hop.
 
-- **Two transforms**: `ParquetInputEnhanced` (read) and `ParquetOutputEnhanced` (write)
-- **Target platform**: Apache Hop 2.16.2+
 - **License**: Apache 2.0 (ASF header required on all Java files)
 
 ## Versioning policy
@@ -17,79 +15,22 @@ Apache Hop plugin that provides enhanced Parquet file input/output transforms, r
 - On `main`, `<revision>` is `X.Y.Z-SNAPSHOT`. After cutting a final `vX.Y.Z` release, `main` is bumped to `X.Y.(Z+1)-SNAPSHOT`. After a pre-release (`vX.Y.Z-{beta,rc}.N`), `<revision>` is **not** bumped — it stays at `X.Y.Z-SNAPSHOT` until the final `X.Y.Z` ships.
 - To upgrade the Hop version used for compilation, bump the `hop.version` Maven property and (if needed) the `<parent>` version in the root `pom.xml`. The project version does not have to change as a consequence.
 
-## Tech Stack
+## Build
 
-| Component       | Version  |
-|-----------------|----------|
-| Java (source)   | 11       |
-| Java (CI)       | 17       |
-| Apache Hop      | 2.16.2   |
-| Apache Parquet  | 1.15.2   |
-| Hadoop Client   | 3.3.6    |
-| Lombok          | 1.18.34  |
-| Build           | Maven    |
-
-## Module Structure
-
-```
-pom.xml                          # Parent POM (packaging: pom)
-transforms/
-  parquet-enhanced/              # Main code module (parent: hop:2.16.2)
-    src/main/java/org/apache/hop/parquet/transforms/
-      input/                     # ParquetInputEnhanced (13 classes)
-      output/                    # ParquetOutputEnhanced (11 classes)
-    src/main/resources/          # i18n messages, SVG icons
-assemblies/
-  assemblies-parquet-enhanced/   # Assembly for distribution zip
-```
-
-## Build Commands
-
-**Always use `-s .m2/settings.xml`** — custom Maven settings referencing GitHub Packages for Hop artifacts.
-
-```bash
-# Full build
-mvn clean package -s .m2/settings.xml
-
-# Verify (CI uses this)
-mvn clean verify -s .m2/settings.xml
-
-# Compile only
-mvn clean compile -s .m2/settings.xml
-```
-
-Requires `GITHUB_ACTOR` and `GITHUB_TOKEN` environment variables for GitHub Packages authentication.
+- Always pass `-s .m2/settings.xml`: the custom Maven settings point to GitHub Packages, where the Hop artifacts are resolved.
+- `GITHUB_ACTOR` and `GITHUB_TOKEN` environment variables are required for GitHub Packages authentication.
+- Java source/target level is 11; CI builds with JDK 17.
 
 ## Code Conventions
 
-### Apache Hop Transform Pattern
-Every transform consists of 3-4 classes:
-- `*Meta` — metadata/configuration, annotated with `@Transform`, extends `BaseTransformMeta<T, D>`
-- `*Data` — runtime data holder, extends `BaseTransformData`
-- Main class (no suffix) — execution logic, extends `BaseTransform<Meta, Data>`
-- `*Dialog` — SWT UI dialog for Hop GUI
-
-### Lifecycle: `init()` -> `processRow()` -> `dispose()`
-
-### Annotations
-- `@Transform(id, image, name, description, ...)` — transform registration
-- `@HopMetadataProperty(key, groupKey, injectionKeyDescription)` — field serialization
-- `@Getter` / `@Setter` (Lombok) — used on all Meta fields
-- Jandex plugin indexes annotations at build time
-
-### i18n
-- Pattern: `BaseMessages.getString(PKG, "key")`
-- Messages in `messages_en_US.properties` and `messages_it_IT.properties`
-- All user-facing strings must be in both locales
-
-### File Access
-Uses Apache Commons VFS (`HopVfs`) for filesystem abstraction. Files read entirely into memory before Parquet parsing.
+- `@Getter`/`@Setter` (Lombok) on all Meta fields; `@HopMetadataProperty` for serialization.
+- All user-facing strings go in both `messages_en_US.properties` and `messages_it_IT.properties`.
+- File access goes through VFS (`HopVfs`). Files are read entirely into memory before Parquet parsing.
 
 ## Task Completion Checklist
 
 1. Build passes: `mvn clean verify -s .m2/settings.xml`
 2. ASF 2.0 license header on all new Java files
 3. New strings added to both `messages_en_US.properties` and `messages_it_IT.properties`
-4. Lombok `@Getter`/`@Setter` on Meta fields, `@HopMetadataProperty` for serialization
-5. New runtime dependencies added to `assembly.xml`
-6. If the PR introduces a user-visible change (feature, behaviour change, bug fix, removal, deprecation, security fix), add an entry under `[Unreleased]` in `CHANGELOG.md` in the appropriate category. Pure refactors, internal tests, CI tweaks and similar invisible changes do not require an entry.
+4. New runtime dependencies added to `assemblies/assemblies-parquet-enhanced/src/assembly/assembly.xml`
+5. If the PR introduces a user-visible change (feature, behaviour change, bug fix, removal, deprecation, security fix), add an entry under `[Unreleased]` in `CHANGELOG.md` in the appropriate category. Pure refactors, internal tests, CI tweaks and similar invisible changes do not require an entry.
