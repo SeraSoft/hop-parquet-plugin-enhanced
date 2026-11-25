@@ -1,5 +1,6 @@
 # CLAUDE.md — hop-parquet-plugin-enhanced
 
+Generic Rules 1–16 come from the user-level layers: `~/.agent-dotfiles/AGENTS.md` (universal) plus the dev profile imported via the untracked `CLAUDE.local.md` (same numbering; Rule 6 retired). This file holds project-specific guidance only.
 
 ## Project Overview
 
@@ -91,5 +92,4 @@ Uses Apache Commons VFS (`HopVfs`) for filesystem abstraction. Files read entire
 3. New strings added to both `messages_en_US.properties` and `messages_it_IT.properties`
 4. Lombok `@Getter`/`@Setter` on Meta fields, `@HopMetadataProperty` for serialization
 5. New runtime dependencies added to `assembly.xml`
-6. No unit tests exist yet — consider adding them for new logic
-7. If the PR introduces a user-visible change (feature, behaviour change, bug fix, removal, deprecation, security fix), add an entry under `[Unreleased]` in `CHANGELOG.md` in the appropriate category. Pure refactors, internal tests, CI tweaks and similar invisible changes do not require an entry.
+6. If the PR introduces a user-visible change (feature, behaviour change, bug fix, removal, deprecation, security fix), add an entry under `[Unreleased]` in `CHANGELOG.md` in the appropriate category. Pure refactors, internal tests, CI tweaks and similar invisible changes do not require an entry.
